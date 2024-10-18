@@ -1,0 +1,244 @@
+0
+0<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+    <title>PayScan</title>
+    <meta content="" name="description">
+    <meta content="" name="keywords">
+
+    <!-- Favicons -->
+    <link href="assets/img/logo.png" rel="icon">
+    <link href="assets/img/logo.png" rel="apple-touch-icon">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600;1,700&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Raleway:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+        rel="stylesheet">
+
+    <!-- Vendor CSS Files -->
+    {% load static %}
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap-icons.css' %}" rel="stylesheet">
+    <link href="{% static 'css/aos.css' %}" rel="stylesheet">
+    <link href="{% static 'css/glightbox.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/swiper-bundle.min.css' %}" rel="stylesheet">
+
+    <!-- Template Main CSS File -->
+    <link href="{% static 'css/main.css' %}" rel="stylesheet">
+
+    <!-- =======================================================
+  * Template Name: Impact - v1.2.0
+  * Template URL: https://bootstrapmade.com/impact-bootstrap-business-website-template/
+  * Author: BootstrapMade.com
+  * License: https://bootstrapmade.com/license/
+  ======================================================== -->
+</head>
+
+<body>
+
+    <!-- ======= Header ======= -->
+    <style>
+        .btn-outline-primary {
+        --bs-btn-color: #4d1616;
+        --bs-btn-border-color: #e9d8d8;
+        --bs-btn-hover-color: #fff;
+        --bs-btn-hover-bg: #4d1616;
+        --bs-btn-hover-border-color: #e9d8d8;
+        --bs-btn-focus-shadow-rgb: 13,110,253;
+        --bs-btn-active-color: #fff;
+        --bs-btn-active-bg: #e9d8d8;
+        --bs-btn-active-border-color: #4d1616;
+        --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+        --bs-btn-disabled-color: grey;
+        --bs-btn-disabled-bg: transparent;
+        --bs-btn-disabled-border-color: #0d6efd;
+        --bs-gradient: none;
+    }
+    </style>
+    
+    {% include "payscan/includes/header.html" %}
+
+    <!-- End Header -->
+
+    <!-- ======= Hero Section ======= -->
+    <section id="hero" class="hero" style="margin-top: ;">
+        <div class="container position-relative">
+            <div class="row gy-5" data-aos="fade-in">
+                <div class="col-lg-6 order-2 order-lg-1 d-flex flex-column justify-content-center text-center text-lg-start">
+                    <div class="d-flex justify-content-center justify-content-lg-start" style="margin-top: 26px;color:#4d1616;margin-bottom: 14px;">
+                        <a href="scanner/public/" class="">Make Payment</a>
+                        <a href="#" class="glightbox btn-watch-video d-flex align-items-center"><i class="bi bi-play-circle"></i><span>Watch Video</span></a>
+
+                    </div>
+                </div>
+                <div class="col-lg-6 order-1 order-lg-2">
+                    <img src="assets/img/logo.gif" class="img-fluid" alt="" data-aos="zoom-out" data-aos-delay="100" style="
+    margin-top: -29px;
+    margin-bottom: -53px;
+">
+                </div>
+
+
+            </div>
+        </div>
+
+
+
+        </div>
+    </section>
+    <!-- End Hero Section -->
+
+    <main id="main">
+
+        <!-- ======= About Us Section ======= -->
+        <section id="about" class="about">
+            <div class="container" data-aos="fade-up">
+                <div class="section-header">
+                    <h2>About Us</h2>
+                    Payscan, is a cutting-edge payment 
+                    system and mobile app that utilizes QR code scanning 
+                    to initiate swift and secure cashless transactions. With 
+                    Payscan, users can easily make payments at their 
+                    convenience, whether it's for shopping, dining, or 
+                    transportation.                </div>
+
+
+                <div class="row gy-4">
+                    <div class="row gy-4">
+                        <div class="col-lg-6 content">
+                            <h3>Vision</h3>
+                            <ul>
+                                <li><i class="bi bi-check-circle-fill"></i>We envision a future where Payscan is the widely preferred day to day payment medium in African for both formal and informal businesses.</li>
+                                <li><i class="bi bi-check-circle-fill"></i>A future where every major financial institution is integrated to Payscan. </li>
+                                <li><i class="bi bi-check-circle-fill"></i>To develop a world wide network of clients and partners </li>
+
+
+                            </ul>
+                        </div>
+
+                    </div>
+                    <div class="col-lg-6">
+                        <h3>Ensuring convience </h3>
+                        <img src="assets/img/code.png" class="img-fluid rounded-4 mb-4" alt="">
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="content ps-0 ps-lg-5">
+                            <p class="fst-italic">
+                                Few of the conditions we set for ourselves inorder to make sure we provide the best possible product
+                            </p>
+                            <ul>
+                                <li><i class="bi bi-check-circle-fill"></i>Regular Maintainance </li>
+                                <li><i class="bi bi-check-circle-fill"></i>openness to suggestions from clients </li>
+                            </ul>
+
+
+                            <div class="position-relative mt-4">
+                                <img src="assets/img/programmer.jpg" class="img-fluid rounded-4" alt="">
+                                <a href="#" class="glightbox "></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+            </div>
+
+            </div>
+        </section>
+        <!-- End About Us Section -->
+
+
+    </main>
+    <!-- End #main -->
+
+    <!-- ======= Footer ======= -->
+
+    <footer id="footer " class="footer ">
+
+        <div class="container ">
+            <div class="row gy-4 ">
+                <div class="col-lg-5 col-md-12 footer-info ">
+                    <a href="index.html " class="logo d-flex align-items-center ">
+                        <span>PayScan</span>
+                    </a>
+                    <div class="social-links d-flex mt-4 ">
+        
+                        <a hidden href="# " class="twitter "><i class="bi bi-twitter "></i></a>
+                        <a href="https://facebook.com/profile.php?id=100090427822694 " class="facebook "><i class="bi bi-facebook "></i></a>
+                        <a hidden href="# " class="instagram "><i class="bi bi-instagram "></i></a>
+                        <a href="https://api.whatsapp.com/send/?phone=26879130668&text=greetings+i+would+like+to...&type=phone number&app absent=0" class="whatsapp "><i class="bi bi-whatsapp "></i></i></a>
+        
+                    </div>
+                </div>
+        
+                <div hidden class="col-lg-2 col-6 footer-links ">
+                    <h4>Useful Links</h4>
+                    <ul>
+                        <li><a href="# ">Home</a></li>
+                        <li><a href="# ">About us</a></li>
+                        <li><a href="# ">Services</a></li>
+                        <li><a href="# ">Terms of service</a></li>
+                        <li><a href="# ">Privacy policy</a></li>
+                    </ul>
+                </div>
+        
+               
+        
+                <div class="col-lg-3 col-md-12 footer-contact text-center text-md-start ">
+                    <h4>Contact Us</h4>
+                    <p>
+        
+        
+                        <strong>Phone:</strong> +26878130668<br>
+                        <strong>Email:</strong> payscan.elite@gmail.com<br>
+                    </p>
+        
+                </div>
+        
+            </div>
+        </div>
+        
+        <div class="container mt-4 ">
+            <div class="copyright ">
+                Copyright &copy; 2023 <strong><span>PayScan</span></strong>. All Rights Reserved
+            </div>
+            <div class="credits " hidden>
+                <!-- All the links in the footer should remain intact. -->
+                <!-- You can delete the links only if you purchased the pro version. -->
+                <!-- Licensing information: https://bootstrapmade.com/license/ -->
+                <!-- Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/impact-bootstrap-business-website-template/ -->
+                Designed by <a href="https://bootstrapmade.com/ ">BootstrapMade</a>
+            </div>
+        </div>
+        
+        </footer>
+        
+    <!-- End Footer -->
+    <!-- End Footer -->
+
+    <a href="# " class="scroll-top d-flex align-items-center justify-content-center "><i class="bi bi-arrow-up-short "></i></a>
+
+    <div id="preloader "></div>
+
+    <!-- Vendor JS Files -->
+    {% load static %}
+    <script src="{% static 'js/bootstrap.bundle.min.js'%} "></script>
+    <script src="{% static 'js/aos.js' %} "></script>
+    <script src="{% static 'js/glightbox.min.js'%} "></script>
+    <script src="{% static 'js/purecounter_vanilla.js' %} "></script>
+    <script src="{% static 'js/swiper-bundle.min.js' %} "></script>
+    <script src="{% static 'js/isotope.pkgd.min.js' %} "></script>
+
+    <!-- Template Main JS File -->
+    <script src="{% static 'js/main.js' %} "></script>
+
+</body>
+
+</html>

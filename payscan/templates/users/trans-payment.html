@@ -1,0 +1,124 @@
+
+{% load static %}
+<!doctype html>
+
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>PayScan</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Favicons -->
+  <link href="{% static 'img/payscanlogo.jpg' %}" rel="icon">
+  <link href="{% static 'img/payscanlogo.jpg' %}" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600;1,700&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Raleway:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+      rel="stylesheet">
+
+      
+      <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+  
+      <link href="{% static 'css/bootstrap-icons.css' %}" rel="stylesheet">
+      <link href="{% static 'css/aos.css' %}" rel="stylesheet">
+      <link href="{% static 'css/glightbox.min.css' %}" rel="stylesheet">
+      <link href="{% static 'css/swiper-bundle.min.css' %}" rel="stylesheet">
+  
+      <!-- Template Main CSS File -->
+      <link href="{% static 'css/main.css' %}" rel="stylesheet">
+      <link href="{% static 'css/signin.css' %}" rel="stylesheet">
+</head>
+<style>
+  .header{
+   height: 48px;
+   margin-bottom:40px;
+  }
+</style>
+
+
+<body class="text-center">
+
+    <main class="form-signin">
+      
+      {% include "payscan/includes/header.html" %}
+
+    <form action="/transport" method="POST">
+      {% csrf_token %}
+    <h3 class="h3 mb-3 fw-normal">Store Information</h3>
+    <h6><b>Name:softlab</b></h6>
+    <h6><b>Cell Number:78130668</b></h6>
+    <h6><b>ID:0001</b></h6>
+
+    <h6 class="h6 mb-3 fw-normal"><b>Please Enter The Required Details and Press Send</b> </h6>
+
+    <div class="form-floating">
+      <input type="number" class="form-control" name="CustomerPhone" id="CustomerPhone" placeholder="phone number">
+      <label for="floatingInput"><h6 class="pholder">Phone Number<h6></label>
+    </div>
+    <div class="form-floating">
+      <label for="destination" placeholder="destination"></label>
+      <select name="Destination" class="form-select ">
+        <option selected>select destination</option>
+        <option  value="Khoza">Manzini - Khoza</option>
+        <option  value="Mhlaleni">Manzini - Mhlaleni</option>
+        <option  value="Logoba">Manzini - Logoba</option>
+        <option  value="Teni">Manzini - Teni</option>
+        <option  value="Uneswa">Manzini - Uneswa</option>
+
+      </select>
+  </div>
+  </br>
+    <div class="form-floating">
+      <input type="number" class="form-control" name="Amount" id="floatingInput" min="0" step="0.01" placeholder="Payment" Required>
+      <label for="floatingInput"><h6 class="pholder">Amount Due - E<h6></label>
+    </div>
+
+    <div class="form-floating" hidden>
+      <input type="number" class="form-control"value="78130668" name="BusinessPhone" id="BusinessPhone" placeholder="BusinessName">
+      <label for="floatingInput"><h6 class="pholder">Phone Number<h6></label>
+    </div>
+    <div class="form-floating" hidden>
+      <input type="text" value="softlab" class="form-control" name="BusinessName" id="BusinessName" placeholder="BusinessName">
+      <label for="floatingInput"><h6 class="pholder">BusinessName<h6></label>
+    </div>
+    <div class="form-floating" hidden>
+      <input type="number" class="form-control" name="CustomerName" value="CustomerName" id="CustomerName" placeholder="CustomerName">
+      <label for="floatingInput"><h6 class="pholder">CustomerName<h6></label>
+    </div>
+    
+    <div><h6>Press Send and Enter Pin on USSD PopUp to Approve Transaction</h6></div>
+
+    <button class="w-100 btn btn-lg btn-primary" type="submit">SEND</button>
+
+    <a href="scanner" class=""><img src="{% static 'img/arrow-return-left.svg' %}" />Back To Scanner</a>
+    <p class="mt-5 mb-3 text-muted">&copy;PAYSCAN 2023 &nbsp; &nbsp; incubated at <img src="{% static 'img/rstp.png' %}" width="40" height="35" /></p>
+
+  </form>
+</main>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %} "></script>
+    <script src="{% static 'js/aos.js' %} "></script>
+    <script src="{% static 'js/glightbox.min.js' %} "></script>
+    <script src="{% static 'js/purecounter_vanilla.js' %} "></script>
+    <script src="{% static 'js/swiper-bundle.min.js' %} "></script>
+    <script src="{% static 'js/isotope.pkgd.min.js' %} "></script>
+
+    <!-- Template Main JS File -->
+    <script src="{% static 'js/main.js' %} "></script>
+  </body>
+</html>
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+    {% load static %} 
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>PayScan</title>
+    <meta content="" name="description">
+    <meta content="" name="keywords">
+
+    <!-- Favicons -->
+    <link href="{% static 'img/payscanlogo.jpg' %}" rel="icon">
+    <link href="{% static 'img/payscanlogo.jpg' %}" rel="apple-touch-icon">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600;1,700&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Raleway:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+        rel="stylesheet">
+  
+        
+        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    
+        <link href="{% static 'css/bootstrap-icons.css' %}" rel="stylesheet">
+        <link href="{% static 'css/aos.css' %}" rel="stylesheet">
+        <link href="{% static 'css/glightbox.min.css' %}" rel="stylesheet">
+        <link href="{% static 'css/swiper-bundle.min.css' %}" rel="stylesheet">
+    
+        <!-- Template Main CSS File -->
+        <link href="{% static 'css/main.css' %}" rel="stylesheet">
+
+
+</head>
+
+<body>
+
+    <style>
+        .btn-outline-primary {
+        --bs-btn-color: #4d1616;
+        --bs-btn-border-color: #e9d8d8;
+        --bs-btn-hover-color: #fff;
+        --bs-btn-hover-bg: #4d1616;
+        --bs-btn-hover-border-color: #e9d8d8;
+        --bs-btn-focus-shadow-rgb: 13,110,253;
+        --bs-btn-active-color: #fff;
+        --bs-btn-active-bg: #e9d8d8;
+        --bs-btn-active-border-color: #4d1616;
+        --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+        --bs-btn-disabled-color: grey;
+        --bs-btn-disabled-bg: transparent;
+        --bs-btn-disabled-border-color: #0d6efd;
+        --bs-gradient: none;
+    }
+
+    </style>
+    
+
+ <!-- ======= Header ======= -->
+ {% include "payscan/includes/header_agent.html" %}
+
+    <!-- ======= Hero Section ======= -->
+ 
+ 
+    <section id="hero" class="hero">
+        {% if messages %}
+        <div>
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+        <center><div class="section-header"><h4 class="btn  px-3" style="background:rgb(233,216,216); color:#4d1616; margin-top:10%;">
+            <strong>      <h3>Payscan <img style="color:#4d1616;" src="{% static 'img/agent.svg' %}"  width="30px"> Agent </h3>
+            </strong> <br>
+
+            {{ agent.agentuser.user.username }}<br>
+                 BALANCE:<strong>SZL {{ agent.balance  }}</strong> <br>
+        
+        </h4></div>
+        </center>
+        </section>
+        <!-- End Her
+    </center>
+    </section>
+    <!- End Hero Section -->
+
+    <main id="main">
+
+        <section id="history">
+            <div class="section-header">
+                    <h2></h2>
+                    <h4>Transactions</h4>
+                    <h2></h2>
+            </div>
+            <table class="table table-striped table-bordered">
+                <thead class="table-danger" style="background:#4d1616">
+                    <tr scope="row">
+                        <th>ID</th>
+                        <th>Amount</th>
+                        <th>Commission</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td>{{ transaction.id }}</td>
+                        <td>SZL{{ transaction.amount }}</td>
+                        <td>SZL{{ transaction.commission }}</td>
+                        <td>{{ transaction.timestamp }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <br><br>
+            <div class="section-header">
+                <h2></h2>
+                <h4>Businesses Registered</h4>
+                <h2></h2>
+        </div>
+           <table class="table table-striped table-bordered">
+    <thead class="table-danger">
+        <tr>
+            <th>Business Name</th>
+            <th>Phone</th>
+            <th>Name</th>
+            <th>Surname</th>
+
+        </tr>
+    </thead>
+    <tbody>
+        {% for business in businesses %}
+        <tr>
+            <td>{{ business.name }}</td>
+            <td>{{ business.owner.user.username }}</td>
+            <td>{{ business.owner.user.first_name  }} </td>
+            <td>{{ business.owner.user.last_name  }} </td>
+
+            
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<table class="table table-striped table-bordered">
+    <thead  class="table-dark">
+                <tr>
+                    <th>Total Earned Commission :</th>
+                    <th>SZL{{ total_earned_commission }}</th>
+                </tr>
+            </thead>
+        </table>
+        </section>
+    
+        </section>
+
+
+    </main>
+    <!-- End #main -->
+
+    <!-- ======= Footer ======= -->
+    {% include "payscan/includes/footer.html" %}
+    <!-- End Footer -->
+
+    <a href="# " class="scroll-top d-flex align-items-center justify-content-center "><i class="bi bi-arrow-up-short "></i></a>
+
+    <div id="preloader "></div>
+
+    <!-- Vendor JS Files -->
+
+    <script src="{% static 'js/bootstrap.bundle.min.js' %} "></script>
+    <script src="{% static 'js/aos.js' %} "></script>
+    <script src="{% static 'js/glightbox.min.js' %} "></script>
+    <script src="{% static 'js/purecounter_vanilla.js' %} "></script>
+    <script src="{% static 'js/swiper-bundle.min.js' %} "></script>
+    <script src="{% static 'js/isotope.pkgd.min.js' %} "></script>
+
+    <!-- Template Main JS File -->
+    <script src="{% static 'js/main.js' %} "></script>
+
+</body>
+
+</html>
+   

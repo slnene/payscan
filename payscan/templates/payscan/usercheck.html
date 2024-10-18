@@ -1,0 +1,34 @@
+
+    <body class="text-center" style="background-color: #e9d8d8;">
+        
+        <main class="form-signin">
+
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+            <script>
+                $.getJSON('/check_login_status/', function(data) {
+                    if (data.is_logged_in) {
+                        $.getJSON('/check_user_type/', function(data) {
+                          
+                                if (data.is_business_user) {
+                                    window.location='/afterlogin_business/'
+                                }
+                                if (data.is_agent_user) {
+                                    window.location='/afterlogin_agent/'
+                                } else {
+                                    window.location='/afterlogin/'
+                                }
+                           
+                        });
+                    } else {
+                        window.location='/login/'
+                    }
+                });
+            </script>
+            
+        
+        
+
+
+    
+  </body>
+</html>

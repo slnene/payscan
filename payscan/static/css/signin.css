@@ -1,0 +1,68 @@
+html,
+body {
+    height: 100%;
+}
+
+body {
+    display: flex;
+    align-items: center;
+    padding-top: 40px;
+    padding-bottom: 40px;
+    background-color: #e9d8d8;
+}
+
+.form-signin {
+    width: 100%;
+    max-width: 330px;
+    padding: 15px;
+    max-heignt: 60px;
+    margin: auto;
+}
+
+.form-signin .checkbox {
+    font-weight: 400;
+}
+
+.form-signin .form-floating:focus-within {
+    z-index: 2;
+}
+
+.form-signin input[type="phone number"] {
+    margin-bottom: -1px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.form-signin input[type="password"] {
+    margin-bottom: 10px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.btn-primary {
+    background: #4d1616;
+    border-color: white;
+}
+.btn-primary:hover{
+    background: #e9d8d8;
+    border-color:#4d1616;
+    color: #4d1616;
+    --bs-btn-active-bg: #e9d8d8;
+    --bs-btn-active-border-color: white;
+    
+#for {
+    margin: ;
+}
+
+.pholder {
+    color: rgb(148, 148, 148);
+}
+
+div>input {
+    height: 44px;
+}
+
+.form-floating>.form-control {
+    height: 44px;
+    
+}

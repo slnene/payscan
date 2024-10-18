@@ -1,0 +1,121 @@
+{% load static %}
+<!doctype html>
+
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>PayScan</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Favicons -->
+  <link href="{% static 'img/payscanlogo.jpg' %}" rel="icon">
+  <link href="{% static 'img/payscanlogo.jpg' %}" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600;1,700&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Raleway:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+      rel="stylesheet">
+
+      
+      <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+  
+      <link href="{% static 'css/bootstrap-icons.css' %}" rel="stylesheet">
+      <link href="{% static 'css/aos.css' %}" rel="stylesheet">
+      <link href="{% static 'css/glightbox.min.css' %}" rel="stylesheet">
+      <link href="{% static 'css/swiper-bundle.min.css' %}" rel="stylesheet">
+  
+      <!-- Template Main CSS File -->
+      <link href="{% static 'css/main.css' %}" rel="stylesheet">
+      <link href="{% static 'css/signin.css' %}" rel="stylesheet">
+</head>
+<style>
+  .header{
+   height: 48px;
+   margin-bottom:40px;
+  }
+</style>
+
+
+<body class="text-center">
+
+    <main class="form-signin">
+      
+      {% include "payscan/includes/header.html" %}
+
+    <form method="POST">
+      {% csrf_token %}
+      <h3 class="h3 mb-3 fw-normal">    <img style="height: 30px;" src="{% static "img/payscan-navlogo.png" %}"/> </button> </a>
+        FOR     <img style="height: 30px;" src="{% static "img/mtnmomo.svg" %}"/> </button> </a>
+      </h3>
+
+
+    <h3 class="h3 mb-3 fw-normal">Store Information</h3>
+    
+
+    <h6><b>Name:{{ business.name}}</b></h6>
+    <h6><b>ID: {{ business.id }} </b></h6>
+<br><br>
+    <h6 class="h6 mb-3 fw-normal"><b>Please Enter Amount Due and Press Pay</b> </h6>
+
+
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    {% if form.amount.errors %}
+        <div class="alert alert-danger">
+            {{ form.amount.errors }}
+        </div>
+    {% endif %}
+
+   
+    <div class="form-floating">
+      <input type="" class="form-control" name="amount" id="floatingInput" placeholder="Payment">     
+      <label for="floatingInput"><h6 class="pholder">Amount Due - E<h6></label>
+    </div>
+
+    <div class="form-floating" hidden>
+      <input type="text"  class="form-control" value="{{ business.id }}" name="business" placeholder="BusinessName">
+      <label for="floatingInput"><h6 class="pholder">Business<h6></label>
+    </div>
+    
+    
+    <div><h6>Press Send and Enter Pin on USSD PopUp to Approve Transaction</h6></div>
+
+    <button class="w-100 btn btn-lg btn-primary" type="submit">PAY</button>
+
+    <a href="/scanner" class=""><img src="{% static 'img/arrow-return-left.svg' %}" />Back To Scanner</a>
+    
+    {% include "payscan/includes/footer_bottom.html" %}
+
+  </form>
+</main>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %} "></script>
+    <script src="{% static 'js/aos.js' %} "></script>
+    <script src="{% static 'js/glightbox.min.js' %} "></script>
+    <script src="{% static 'js/purecounter_vanilla.js' %} "></script>
+    <script src="{% static 'js/swiper-bundle.min.js' %} "></script>
+    <script src="{% static 'js/isotope.pkgd.min.js' %} "></script>
+
+    <!-- Template Main JS File -->
+    <script src="{% static 'js/main.js' %} "></script>
+  </body>
+</html>
+
+
+
+
+
+
+
+
+
+
