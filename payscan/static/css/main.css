@@ -2796,3 +2796,39 @@ section {
             display: none;
             text-align: center;
         }
+
+
+.fade-enter-active, .fade-leave-active {
+            transition: opacity 0.5s;
+          }
+.fade-enter, .fade-leave-to /* .fade-leave-active in <2.1.8 */ {
+            opacity: 0;
+          }
+          
+
+
+/* Add to your main CSS file */
+.fade-out {
+    animation: fadeOut 0.5s forwards;
+}
+
+.fade-in {
+    animation: fadeIn 0.5s forwards;
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+
+/* Example CSS for transitions */
+.is-exiting .m-page {
+    opacity: 0;
+    transition: opacity 250ms ease;
+}

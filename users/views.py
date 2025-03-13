@@ -9,7 +9,7 @@ from agents.models import Agent
 from payscan.models import Transaction
 
 from django.contrib.auth.decorators import login_required
-from .forms import RegisterForm,DepositForm,WithdrawForm,PaymentForm,LoginForm
+from .forms import RegisterForm,PaymentForm,LoginForm
 
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -44,112 +44,354 @@ from PIL import Image, ImageDraw, ImageFont
 from PIL import Image, ImageDraw, ImageFont
 import uuid
 from django.core.management.utils import get_random_secret_key
-print(get_random_secret_key())
 import random
 import string
-from payscan.twilio import*
+from payscan.utils import send_pin,generate_pin
+from payscan.momo_api import*
+from django.contrib import messages
+from uni.client import UniClient
+from uni.exception import UniException
+
+client = UniClient("NHxLRh7E7psscG1GtFaN2j", "23F32EQ6EK6TgLSvMvtzuje3krA4D9a")
+
+print(get_random_secret_key())
+
+
+
+##################################### USERS / REGISTRAION AND DASHBOARD ###############################
+
+from firebase_admin import auth, firestore
 
 def register(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
-            # Generate and send OTP
-            otp = generate_otp()
-            phone_number = form.cleaned_data['username']  # Assuming username is phone number
-            send_otp(phone_number, otp)
-            request.session['otp'] = otp
-            request.session['form_data'] = form.cleaned_data
+            email = form.cleaned_data['email']
+            username = form.cleaned_data['username']
+            first_name = form.cleaned_data['first_name']
+            last_name = form.cleaned_data['last_name']
+            phone_number = username
+            if not phone_number.startswith('+'):
+                phone_number = f'+268{phone_number}'
+            pin = generate_pin()
+            send_pin(phone_number, pin)
+            password = pin  # Default pin as password
 
-            return redirect('verify_otp')  # Redirect to OTP verification page
-
-    else:
-        form = RegisterForm()
-
-    return render(request, 'users/register.html', {'form': form})
-
-def verify_otp(request):
-    if request.method == 'POST':
-        otp = request.POST.get('otp')
-        if otp == request.session.get('otp'):
-            # Complete registration
-            form_data = request.session.get('form_data')
-            user = User.objects.create_user(
-                email=form_data['email'],
-                username=form_data['username'],
-                first_name=form_data['first_name'],
-                last_name=form_data['last_name'],
-                password=form_data['password1']
+            # Create user in Firebase Auth
+            firebase_user = auth.create_user(
+                email=email,
+                email_verified=False,
+                phone_number=phone_number,
+                password=password,
+                display_name=f'{first_name} {last_name}',
+                disabled=False
             )
-            PayscanUser.objects.create(user=user)
-            messages.success(request, 'Registration successful! Please log in.')
+
+            # Save user data to Firebase Firestore
+            db = firestore.client()
+            user_ref = db.collection('users').document(firebase_user.uid)
+            user_ref.set({
+                'email': email,
+                'username': username,
+                'first_name': first_name,
+                'last_name': last_name,
+                'phone_number': phone_number,
+                'default_pin': pin,
+                'priority': 1,
+                'balance': 0
+            })
+            django_user = User.objects.create_user(
+                email=email,
+                username=username,
+                first_name=first_name,
+                last_name=last_name,
+                password=password
+            )
+            PayscanUser.objects.create(user=django_user, default_pin=pin, priority=1)
+
+            request.session['pin'] = pin
+            request.session['form_data'] = form.cleaned_data
+            print(f'PIN: {pin}')
+            messages.success(request, 'Registration successful! Login with default PIN and reset your PIN on first login.')
             return redirect('login')
         else:
-            messages.error(request, 'Invalid OTP')
+            print("Form errors:", form.errors)
+    else:
+        form = RegisterForm()
+    return render(request, 'users/register.html', {'form': form})
 
-    return render(request, 'users/verify_otp.html')
+@login_required
+def reset_pin(request):
+    if request.method == 'POST':
+        pin = request.POST.get('new_pin')
+        user = request.user
+        user.set_password(pin)  # Reset the user's PIN in Django
+        user.save()
+
+        messages.success(request, 'PIN reset successful!')
+        return redirect('login')
+    return render(request, 'payscan/reset_pin.html')
 
 
 
 
 
-    
-def logout_view(request):
-    logout(request)
-    return redirect('login')
+def register1(request):
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            username =form.cleaned_data['username']
+            first_name = form.cleaned_data['first_name']
+            last_name = form.cleaned_data['last_name']
+            password = form.cleaned_data['password1']
+                            
+            user=User.objects.create_user(email=email, username=username, first_name=first_name, last_name=last_name, password=password)          
+            PayscanUser.objects.create(user=user)
+            return redirect('login')     
+    else:
+            # Handle the case where the passwords do not match
+        form = RegisterForm()            
+    return render(request, 'users/register.html', {'form': form})
+
 
 @login_required
 def dashboard(request):
     try:
-        payscan_user = PayscanUser.objects.get(user=request.user)
-        transactions = Transaction.objects.filter(payer=payscan_user).order_by('-timestamp')
-        return render(request, 'users/dashboard.html', {'balance': payscan_user.balance ,'transactions': transactions})
+        payscan_user = PayscanUser.objects.select_related('user').get(user=request.user)
+        transactions = Transaction.objects.filter(payer=payscan_user).select_related('business').order_by('-timestamp')
+        momo_balance = get_balance()  # Get the MoMo balance
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return render(request, 'users/dashboard.html', {'transactions': transactions, 'balance': momo_balance})
+        return render(request, 'users/dashboard.html', {'balance': momo_balance, 'transactions': transactions})
     except PayscanUser.DoesNotExist:
         return render(request, 'users/login.html')
-    
-    
-    
+
 @login_required
-def transaction_history(request):
+def get_transactions(request):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        payscan_user = PayscanUser.objects.get(user=request.user)
+        transactions = Transaction.objects.filter(payer=payscan_user).order_by('-timestamp')
+        data = {
+            'transactions': list(transactions.values())
+        }
+        return JsonResponse(data)
+
+    
+    
+
+########################################### USERS / MAKING PAYMENTS ######################################################
+
+
+
+@login_required
+def payment(request, business_id):
+    business = get_object_or_404(Business, id=business_id)
     payscan_user = PayscanUser.objects.get(user=request.user)
-    transactions = Transaction.objects.filter(user=payscan_user).order_by('-timestamp')
-    return render(request, 'payscan/dashboard.html', {'transactions': transactions})
-
-@login_required
-def deposit(request):
-    payscan_user = PayscanUser.objects.filter(user=request.user).first()
-    if payscan_user is None:
-        return render(request, 'payscan/deposit.html', {'form': DepositForm(), 'error': 'User does not exist'})
-
     if request.method == 'POST':
-        form = DepositForm(request.POST)
+        form = PaymentForm(request.POST, balance=payscan_user.balance)
         if form.is_valid():
             amount = form.cleaned_data['amount']
-            payscan_user.balance += amount
-            payscan_user.save()
-            Transaction.objects.create(payer=payscan_user, amount=amount, transaction_type='deposit')
-            return redirect('/afterlogin')
+            if payscan_user.balance >= amount:
+                if amount < Decimal('20.00'):
+                    commission_amount = Decimal('0.10')
+                elif Decimal('20.00') <= amount < Decimal('50.00'):
+                    commission_amount = Decimal('0.20')
+                elif Decimal('50.00') <= amount < Decimal('100.00'):
+                    commission_amount = Decimal('0.30')
+                elif Decimal('100.00') <= amount < Decimal('200.00'):
+                    commission_amount = Decimal('0.50')
+                elif Decimal('200.00') <= amount < Decimal('500.00'):
+                    commission_amount = Decimal('0.70')
+                elif Decimal('500.00') <= amount:
+                    commission_amount = Decimal('02.00')
+
+
+
+                agent = business.agent
+
+                payscan_user.balance -= amount
+                payscan_user.save()
+
+                business.balance += (amount)
+                business.save()
+
+                if agent:
+                    agent.balance += commission_amount
+                    agent.save()
+                    
+                if business:
+                    transaction = Transaction.objects.create(
+                        payer=payscan_user,
+                        business=business,  # Ensure this field is set
+                        amount=amount,
+                        transaction_type='payment',
+                        agent=agent,
+                        commission=commission_amount
+                    )
+                    return redirect('payment_success', transaction_id=transaction.id)
+                else:
+                    # Handle the case where the business object is None
+                    messages.error(request, "Business not found.")
+                    return redirect('payment_error')
+
+                
     else:
-        form = DepositForm()
-    return render(request, 'payscan/deposit.html', {'form': form})
+        form = PaymentForm(balance=payscan_user.balance)
+    return render(request, 'users/payment.html', {'form': form, 'business': business})
+
 
 @login_required
-def withdraw(request):
-    payscan_user = PayscanUser.objects.filter(user=request.user).first()
-    if payscan_user is None:
-        return render(request, 'payscan/deposit.html', {'form': DepositForm(), 'error': 'User does not exist'})
+def confirm_payment(request, business_id):
+    business = get_object_or_404(Business, id=business_id)
+    payscan_user = PayscanUser.objects.get(user=request.user)
+    
+    amount_str = request.GET.get('amount', '0.00')  # Default to '0.00' if amount is not provided
 
+    # Ensure the amount_str is a valid decimal string
+    try:
+        amount = Decimal(amount_str)
+    except InvalidOperation:
+        print(f"Invalid amount format: {amount_str}")
+        amount = Decimal('0.00')
+        
     if request.method == 'POST':
-        form = DepositForm(request.POST)
+        form = PaymentForm(request.POST, balance=payscan_user.balance)
         if form.is_valid():
             amount = form.cleaned_data['amount']
-            payscan_user.balance -= amount
-            payscan_user.save()
-            Transaction.objects.create(payer=payscan_user, amount=amount, transaction_type='withdraw')
-            return redirect('/afterlogin')
-    else:
-        form = WithdrawForm()
-    return render(request, 'payscan/withdraw.html', {'form': form})
+            if payscan_user.balance >= amount:
+                if amount < Decimal('20.00'):
+                    commission_amount = Decimal('0.10')
+                elif Decimal('20.00') <= amount < Decimal('50.00'):
+                    commission_amount = Decimal('0.20')
+                elif Decimal('50.00') <= amount < Decimal('100.00'):
+                    commission_amount = Decimal('0.30')
+                elif Decimal('100.00') <= amount < Decimal('200.00'):
+                    commission_amount = Decimal('0.50')
+                elif Decimal('200.00') <= amount < Decimal('500.00'):
+                    commission_amount = Decimal('0.70')
+                elif Decimal('500.00') <= amount:
+                    commission_amount = Decimal('2.00')
 
+                # Initialize Collections
+                collections = Collections(
+                    settings.MOMOAPI['collections']['sandbox']['subscription_key'],
+                    settings.MOMOAPI['collections']['sandbox']['user_id'],
+                    settings.MOMOAPI['collections']['sandbox']['api_key'],
+                    settings.MOMOAPI['collections']['sandbox']['environment']
+                )
+
+                external_id = "some_unique_external_id"  # Generate a unique external ID for the transaction
+                payer_message = 'Payment for services'
+                payee_note = 'Payment for services'
+
+                response = collections.request_to_pay(
+                    amount=amount,
+                    currency='EUR',
+                    external_id=external_id,
+                    payer={'party_id_type': 'MSISDN', 'party_id': payscan_user.user.username},
+                    payer_message=payer_message,
+                    payee_note=payee_note
+                )
+
+                transaction = Transaction.objects.create(
+                    payer=payscan_user,
+                    business=business,
+                    amount=amount,
+                    transaction_type='payment',
+                    agent=business.agent,
+                    commission=commission_amount,
+                    external_id=external_id
+                )
+
+                if response.status_code == 202:  # Payment request successfully initiated
+                    transaction.status = 'success'
+                    transaction.save()
+                    payscan_user.balance -= amount
+                    payscan_user.save()
+                    business.balance += amount
+                    business.save()
+
+                    if business.agent:
+                        business.agent.balance += commission_amount
+                        business.agent.save()
+                    
+                    messages.success(request, 'Payment successful')
+                    return redirect('payment_success', transaction_id=transaction.id)
+                else:
+                    transaction.status = 'failed'
+                    transaction.save()
+                    messages.error(request, 'Payment failed')
+                    return redirect('payment_error')
+
+    else:
+        form = PaymentForm(balance=payscan_user.balance)
+    return render(request, 'users/confirm_payment.html', {'form': form, 'business': business, 'amount': amount})
+
+
+def payment_error(request):
+    
+    return render(request, 'users/payment_error.html' )
+
+
+@login_required
+def payment_success(request, transaction_id):
+    transaction = Transaction.objects.get(id=transaction_id)
+    return render(request, 'users/payment_success.html', {'transaction': transaction})
+
+@login_required
+def payment_momo(request, business_id):
+    business = get_object_or_404(Business, id=business_id)
+    payscan_user = PayscanUser.objects.get(user=request.user)
+
+    if request.method == 'POST':
+        form = PaymentForm(request.POST, balance=payscan_user.balance)
+        if form.is_valid():
+            amount = form.cleaned_data['amount']
+            if payscan_user.balance >= amount:
+                collections = Collections(
+                    settings.MOMOAPI['collections']['sandbox']['subscription_key'],
+                    settings.MOMOAPI['collections']['sandbox']['user_id'],
+                    settings.MOMOAPI['collections']['sandbox']['api_key'],
+                    settings.MOMOAPI['collections']['sandbox']['environment']
+                )
+
+                external_id = "some_unique_external_id"  # Generate a unique external ID for the transaction
+                payer_message = 'Payment for services'
+                payee_note = 'Payment for services'
+
+                response = collections.request_to_pay(
+                    amount=amount,
+                    currency='EUR',
+                    external_id=external_id,
+                    payer={'party_id_type': 'MSISDN', 'party_id': payscan_user.user.username},
+                    payer_message=payer_message,
+                    payee_note=payee_note
+                )
+
+                transaction = Transaction.objects.create(
+                    payer=payscan_user,
+                    business=business,
+                    amount=amount,
+                    transaction_type='payment',
+                    external_id=external_id
+                )
+
+                if response.status_code == 202:  # Payment request successfully initiated
+                    transaction.status = 'success'
+                    transaction.save()
+                    messages.success(request, 'Payment successful')
+                    return redirect('payment_success', transaction_id=transaction.id)
+                else:
+                    transaction.status = 'failed'
+                    transaction.save()
+                    messages.error(request, 'Payment failed')
+                    return redirect('payment_error')  # Redirect to error page
+
+    else:
+        form = PaymentForm(balance=payscan_user.balance)
+
+    return render(request, 'users/payment.html', {'form': form, 'business': business})
 
 def choose_wallet(request, business_id):
     business = get_object_or_404(Business, id=business_id)
@@ -241,357 +483,9 @@ def choose_wallet_dynamic(request, business_id):
     return render(request, 'users/choose_wallet_dynamic.html', {'business': business, 'amount': amount})
 
 
-def choose_deposit(request):
-    payscan_user = PayscanUser.objects.get(user=request.user)
-    return render(request, 'users/choose_deposit.html')
 
-def choose_withdraw(request):
-    payscan_user = PayscanUser.objects.get(user=request.user)
-    return render(request, 'users/choose_withdraw.html')
 
 
+######################################  USERS / DEPOSITS AND WITHDRAWALS ##############################################
+                        
 
-def payment_momo(request, business_id):
-    business = get_object_or_404(Business, id=business_id)
-    return render(request, 'users/payment_momo.html', {'business': business})
-
-
-
-@login_required
-def payment(request, business_id):
-    business = get_object_or_404(Business, id=business_id)
-    payscan_user = PayscanUser.objects.get(user=request.user)
-    if request.method == 'POST':
-        form = PaymentForm(request.POST, balance=payscan_user.balance)
-        if form.is_valid():
-            amount = form.cleaned_data['amount']
-            if payscan_user.balance >= amount:
-                if amount < Decimal('20.00'):
-                    commission_amount = Decimal('0.10')
-                elif Decimal('20.00') <= amount < Decimal('50.00'):
-                    commission_amount = Decimal('0.20')
-                elif Decimal('50.00') <= amount < Decimal('100.00'):
-                    commission_amount = Decimal('0.30')
-                elif Decimal('100.00') <= amount < Decimal('200.00'):
-                    commission_amount = Decimal('0.50')
-                elif Decimal('200.00') <= amount < Decimal('500.00'):
-                    commission_amount = Decimal('0.70')
-                elif Decimal('500.00') <= amount:
-                    commission_amount = Decimal('02.00')
-
-
-
-                agent = business.agent
-
-                payscan_user.balance -= amount
-                payscan_user.save()
-
-                business.balance += (amount)
-                business.save()
-
-                if agent:
-                    agent.balance += commission_amount
-                    agent.save()
-                    
-                if business:
-                    transaction = Transaction.objects.create(
-                        payer=payscan_user,
-                        business=business,  # Ensure this field is set
-                        amount=amount,
-                        transaction_type='payment',
-                        agent=agent,
-                        commission=commission_amount
-                    )
-                    return redirect('payment_success', transaction_id=transaction.id)
-                else:
-                    # Handle the case where the business object is None
-                    messages.error(request, "Business not found.")
-                    return redirect('payment_error')
-
-                
-    else:
-        form = PaymentForm(balance=payscan_user.balance)
-    return render(request, 'users/payment.html', {'form': form, 'business': business})
-
-
-@login_required
-def payment_success(request, transaction_id):
-    transaction = Transaction.objects.get(id=transaction_id)
-    return render(request, 'payscan/payment_success.html', {'transaction': transaction})
-
-
-
-
-import requests
-from django.shortcuts import get_object_or_404, redirect, render
-from django.conf import settings
-from myapp.models import Transaction, PayscanUser, Business
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from decimal import Decimal
-from myapp.forms import PaymentForm
-
-class Collections:
-    def __init__(self, subscription_key, user_id, api_key, environment):
-        self.subscription_key = subscription_key
-        self.user_id = user_id
-        self.api_key = api_key
-        self.environment = environment
-        self.base_url = 'https://sandbox.momodeveloper.mtn.com/collection' if environment == 'sandbox' else 'https://momodeveloper.mtn.com/collection'
-
-    def get_access_token(self):
-        url = f"{self.base_url}/token/"
-        headers = {
-            'Authorization': f'Basic {self.api_key}',
-            'Ocp-Apim-Subscription-Key': self.subscription_key,
-        }
-        response = requests.post(url, headers=headers)
-        return response.json().get('access_token')
-
-    def request_to_pay(self, amount, currency, external_id, payer, payer_message, payee_note):
-        url = f"{self.base_url}/v1_0/requesttopay"
-        headers = {
-            'Authorization': f'Bearer {self.get_access_token()}',
-            'X-Reference-Id': external_id,
-            'X-Target-Environment': self.environment,
-            'Content-Type': 'application/json',
-            'Ocp-Apim-Subscription-Key': self.subscription_key,
-        }
-        data = {
-            'amount': str(amount),
-            'currency': currency,
-            'externalId': external_id,
-            'payer': payer,
-            'payerMessage': payer_message,
-            'payeeNote': payee_note,
-        }
-        response = requests.post(url, headers=headers, json=data)
-        return response
-
-@login_required
-def make_payment(request, business_id):
-    business = get_object_or_404(Business, id=business_id)
-    payscan_user = PayscanUser.objects.get(user=request.user)
-
-    if request.method == 'POST':
-        form = PaymentForm(request.POST, balance=payscan_user.balance)
-        if form.is_valid():
-            amount = form.cleaned_data['amount']
-            if payscan_user.balance >= amount:
-                collections = Collections(
-                    settings.MOMOAPI['collections']['sandbox']['subscription_key'],
-                    settings.MOMOAPI['collections']['sandbox']['user_id'],
-                    settings.MOMOAPI['collections']['sandbox']['api_key'],
-                    settings.MOMOAPI['collections']['sandbox']['environment']
-                )
-
-                external_id = "some_unique_external_id"  # Generate a unique external ID for the transaction
-                payer_message = 'Payment for services'
-                payee_note = 'Payment for services'
-
-                response = collections.request_to_pay(
-                    amount=amount,
-                    currency='EUR',
-                    external_id=external_id,
-                    payer={'party_id_type': 'MSISDN', 'party_id': payscan_user.user.username},
-                    payer_message=payer_message,
-                    payee_note=payee_note
-                )
-
-                if response.status_code == 202:  # Payment request successfully initiated
-                    transaction = Transaction.objects.create(
-                        payer=payscan_user,
-                        business=business,
-                        amount=amount,
-                        transaction_type='payment',
-                        external_id=external_id
-                    )
-                    payscan_user.balance -= amount
-                    payscan_user.save()
-                    business.balance += amount
-                    business.save()
-                    messages.success(request, 'Payment successful')
-                    return redirect('payment_success', transaction_id=transaction.id)
-                else:
-                    messages.error(request, 'Payment failed')
-                    return redirect('payment_error')
-
-    else:
-        form = PaymentForm(balance=payscan_user.balance)
-
-    return render(request, 'users/payment.html', {'form': form, 'business': business})
-
-
-
-
-
-
-
-
-
-
-
-
-
-from django.contrib import messages
-from .utils import initiate_momo_payment, transfer_to_business
-
-@login_required
-def payment_momo(request, business_id):
-    business = get_object_or_404(Business, id=business_id)
-    payscan_user = PayscanUser.objects.get(user=request.user)
-    unique_id = uuid.uuid4()
-    if request.method == 'POST':
-        form = PaymentForm(request.POST, balance=payscan_user.balance)
-        if form.is_valid():
-            amount = form.cleaned_data['amount']
-            if payscan_user.balance >= amount:
-                if amount < Decimal('20.00'):
-                    commission_amount = Decimal('0.10')
-                elif Decimal('20.00') <= amount < Decimal('50.00'):
-                    commission_amount = Decimal('0.20')
-                elif Decimal('50.00') <= amount < Decimal('100.00'):
-                    commission_amount = Decimal('0.30')
-                elif Decimal('100.00') <= amount < Decimal('200.00'):
-                    commission_amount = Decimal('0.50')
-                elif Decimal('200.00') <= amount < Decimal('500.00'):
-                    commission_amount = Decimal('0.70')
-                elif Decimal('500.00') <= amount:
-                    commission_amount = Decimal('2.00')
-
-                agent = business.agent
-
-                # Initiate payment via MTN MoMo
-                external_id = f"txn_{business_id}_{payscan_user.user.username}"
-                momo_response = initiate_momo_payment(amount, payscan_user.user.username, external_id)
-                if momo_response.get('status') == 'success':
-                    payscan_user.balance -= amount
-                    payscan_user.save()
-
-                    business.balance += amount
-                    business.save()
-
-                    if agent:
-                        agent.balance += commission_amount
-                        agent.save()
-
-                    # Transfer money to the business
-                    transfer_response = transfer_to_business(amount, business)
-                    if transfer_response.get('status') == 'success':
-                        transaction = Transaction.objects.create(
-                            payer=payscan_user,
-                            business=business,
-                            amount=amount,
-                            transaction_type='payment',
-                            agent=agent,
-                            commission=commission_amount
-                        )
-                        return redirect('payment_success', transaction_id=transaction.id)
-                    else:
-                        messages.error(request, "Failed to transfer money to the business.")
-                        return redirect('payment_error9')
-                else:
-                    messages.error(request, "Failed to initiate payment via MTN MoMo.")
-                    return redirect('payment_error')
-    else:
-        form = PaymentForm(balance=payscan_user.balance)
-    return render(request, 'users/payment_momo.html', {'form': form, 'business': business})
-
-
-def payment_error(request):
-    
-    return render(request, 'users/payment_error.html' )
-
-
-
-
-
-class Collections:
-    def __init__(self, subscription_key, user_id, api_key, environment):
-        self.subscription_key = subscription_key
-        self.user_id = user_id
-        self.api_key = api_key
-        self.environment = environment
-        self.base_url = 'https://sandbox.momodeveloper.mtn.com/collection' if environment == 'sandbox' else 'https://momodeveloper.mtn.com/collection'
-
-    def get_access_token(self):
-        url = f"{self.base_url}/token/"
-        headers = {
-            'Authorization': f'Basic {self.api_key}',
-            'Ocp-Apim-Subscription-Key': self.subscription_key,
-        }
-        response = requests.post(url, headers=headers)
-        return response.json().get('access_token')
-
-    def request_to_pay(self, amount, currency, external_id, payer, payer_message, payee_note):
-        url = f"{self.base_url}/v1_0/requesttopay"
-        headers = {
-            'Authorization': f'Bearer {self.get_access_token()}',
-            'X-Reference-Id': external_id,
-            'X-Target-Environment': self.environment,
-            'Content-Type': 'application/json',
-            'Ocp-Apim-Subscription-Key': self.subscription_key,
-        }
-        data = {
-            'amount': str(amount),
-            'currency': currency,
-            'externalId': external_id,
-            'payer': payer,
-            'payerMessage': payer_message,
-            'payeeNote': payee_note,
-        }
-        response = requests.post(url, headers=headers, json=data)
-        return response
-
-@login_required
-def make_payment(request, business_id):
-    business = get_object_or_404(Business, id=business_id)
-    payscan_user = PayscanUser.objects.get(user=request.user)
-
-    if request.method == 'POST':
-        form = PaymentForm(request.POST, balance=payscan_user.balance)
-        if form.is_valid():
-            amount = form.cleaned_data['amount']
-            if payscan_user.balance >= amount:
-                collections = Collections(
-                    settings.MOMOAPI['collections']['sandbox']['subscription_key'],
-                    settings.MOMOAPI['collections']['sandbox']['user_id'],
-                    settings.MOMOAPI['collections']['sandbox']['api_key'],
-                    settings.MOMOAPI['collections']['sandbox']['environment']
-                )
-
-                external_id = "some_unique_external_id"  # Generate a unique external ID for the transaction
-                payer_message = 'Payment for services'
-                payee_note = 'Payment for services'
-
-                response = collections.request_to_pay(
-                    amount=amount,
-                    currency='EUR',
-                    external_id=external_id,
-                    payer={'party_id_type': 'MSISDN', 'party_id': payscan_user.user.username},
-                    payer_message=payer_message,
-                    payee_note=payee_note
-                )
-
-                if response.status_code == 202:  # Payment request successfully initiated
-                    transaction = Transaction.objects.create(
-                        payer=payscan_user,
-                        business=business,
-                        amount=amount,
-                        transaction_type='payment',
-                        external_id=external_id
-                    )
-                    payscan_user.balance -= amount
-                    payscan_user.save()
-                    business.balance += amount
-                    business.save()
-                    messages.success(request, 'Payment successful')
-                    return redirect('payment_success', transaction_id=transaction.id)
-                else:
-                    messages.error(request, 'Payment failed')
-                    return redirect('payment_error')
-
-    else:
-        form = PaymentForm(balance=payscan_user.balance)
-
-    return render(request, 'users/payment.html', {'form': form, 'business': business})

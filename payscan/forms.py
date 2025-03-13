@@ -15,4 +15,4 @@ from django.contrib.auth import authenticate
 
 class LoginForm(AuthenticationForm):
     username = forms.CharField(max_length=254, widget=forms.TextInput(attrs={'autofocus': True}))
-    password = forms.CharField(label="Password", strip=False, widget=forms.PasswordInput)
+    password = forms.CharField(label="Pin", strip=False, widget=forms.PasswordInput)

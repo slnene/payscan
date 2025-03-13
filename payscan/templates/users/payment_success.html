@@ -1,0 +1,39 @@
+{% load static  %}
+<!doctype html>
+<html lang="en">
+
+{% include "payscan/includes/head.html" %}
+
+<body id="main" data-barba="wrapper" class="text-center m-scene">
+    <main id="main-content" class="m-page form-signin">  
+      
+        {% include "payscan/includes/header.html" %}
+
+      {% block content %}
+            <div>
+            <h3>Transaction of E{{ transaction.amount }} to {{ transaction.payee.name }} ( {{ transaction.payee.id }} ) was made successfully 
+            <br>
+                <img class="mb-4" src="{% static 'img/check.svg' %}" alt="" width="30%" height="30%">
+<br>
+            Time : {{ transaction.timestamp }}
+            <br>
+            Transaction ID : {{ transaction.id }}
+            <br>
+            <br>
+            Thank You For Choosing PayScan</h3>
+            </div>
+            {% endblock %}
+
+            <a href="/scanner/" class=""><img src="{% static 'img/arrow-return-left.svg' %}" />Back To Scanner</a>
+
+
+        
+    </main>
+    <audio id="success-sound" src="{% static 'sounds/mixkit-confirmation-tone-2867.wav' %}" autoplay preload="auto"></audio>
+    {% include "payscan/includes/footer_bottom.html" %}
+
+    {% include "payscan/includes/foot.html" %}
+
+</body>
+
+</html>

@@ -1,0 +1,81 @@
+{% load static %}
+<!doctype html>
+
+<html lang="en">
+
+{% include "payscan/includes/head.html" %}
+<link href="{% static 'css/signin.css' %}" rel="stylesheet">
+
+<style>
+  .header{
+   height: 48px;
+   margin-bottom:40px;
+  }
+</style>
+
+
+<body id="main" data-barba="wrapper" class="text-center m-scene">
+  <main id="main-content" class="m-page form-signin">  
+    
+      
+      {% include "payscan/includes/header.html" %}
+
+    <form method="POST" id="Form">
+      {% csrf_token %}
+    <h3 class="h3 mb-3 fw-normal">Store Information</h3>
+    
+
+    <h6><b>Name:{{ business.name}}</b></h6>
+    <h6><b>ID: {{ business.id }} </b></h6>
+<br><br>
+    <h6 class="h6 mb-3 fw-normal"><b>Please Enter Amount Due and Press Pay</b> </h6>
+
+
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    {% if form.amount.errors %}
+        <div class="alert alert-danger">
+            {{ form.amount.errors }}
+        </div>
+    {% endif %}
+
+   
+    <div class="form-floating">
+      <input type="number" step="0.01" class="form-control" name="amount" id="floatingInput" placeholder="Payment" onblur="formatAmount()">
+      <label for="floatingInput"><h6 class="pholder">Amount Due - SZL <h6></label>
+    </div>
+
+    <div class="form-floating" hidden>
+      <input type="text"  class="form-control" value="{{ business.id }}" name="business" placeholder="BusinessName">
+      <label for="floatingInput"><h6 class="pholder">Business<h6></label>
+    </div>
+    
+    
+
+    <button class="w-100 btn btn-lg btn-primary" type="submit">PAY</button>
+
+    <a href="/scanner" class=""><img src="{% static 'img/arrow-return-left.svg' %}" />Back To Scanner</a>
+    
+    {% include "payscan/includes/footer_bottom.html" %}
+
+  </form>
+</main>
+{% include "payscan/includes/foot.html" %}
+
+  </body>
+</html>
+
+
+
+
+
+
+
+
+
+

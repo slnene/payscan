@@ -1,0 +1,288 @@
+</div> <!--closing div id="main" class="m-scene"-->
+</div> <!--closing div ANIMATE IN HEAD.HTML-->
+
+
+{% load static %}
+<audio id="scan-sound" src="{% static 'sounds/mixkit-alert-quick-chime-766.wav' %}" preload="auto"></audio>
+<audio id="transaction-sound" src="{% static 'sounds/mixkit-long-pop-2358.wav' %}" preload="auto"></audio>
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/aos.js' %}"></script>
+<script src="{% static 'js/glightbox.min.js' %}"></script>
+<script src="{% static 'js/purecounter_vanilla.js' %}"></script>
+<script src="{% static 'js/swiper-bundle.min.js' %}"></script>
+<script src="{% static 'js/isotope.pkgd.min.js' %}"></script>
+<script src="{% static 'js/barba.umd.js' %}"></script>
+<script src="{% static 'js/gsap.min.js' %}"></script>
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script src="{% static 'js/jquery.smoothState.min.js' %}"></script>
+<!-- jQuery CDN -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<!-- Template Main JS File -->
+<script src="{% static 'js/main.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const audio = document.getElementById('transaction-sound');
+        let lastTransactionCount = 0;
+
+        function fetchAndFilterTransactions(date = null) {
+            let url = `{% url 'get_transactions' %}`;
+            if (date) {
+                url = `{% url 'filter_transactions' %}?date=${date}`;
+            }
+
+            console.log("Fetching transactions from URL:", url);  // Debugging line
+
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Fetched transactions data:", data);  // Debugging line
+                const transactionTableBody = document.getElementById('transactionTableBody');
+                transactionTableBody.innerHTML = ''; // Clear existing rows
+
+                data.transactions.forEach(transaction => {
+                    const row = `
+                        <tr>
+                            <td>${transaction.id}</td>
+                            <td>${transaction.payer}</td>
+                            <td>SZL ${transaction.amount}</td>
+                            <td>${transaction.transaction_type}</td>
+                            <td>${transaction.timestamp}</td>
+                        </tr>`;
+                    transactionTableBody.insertAdjacentHTML('beforeend', row);
+                });
+
+                if (!date && data.transactions.length > lastTransactionCount) {
+                    audio.play();
+                }
+                lastTransactionCount = data.transactions.length;
+            })
+            .catch(error => console.error('Error fetching transactions:', error));
+        }
+
+        document.getElementById('transactionDate').addEventListener('change', function() {
+            const selectedDate = this.value;
+            fetchAndFilterTransactions(selectedDate);
+        });
+
+        // Initial fetch for today's transactions
+        fetchAndFilterTransactions();
+
+        // Periodically fetch transactions
+        setInterval(() => fetchAndFilterTransactions(), 2000);  // Fetch transactions every 10 seconds
+    });
+</script>
+
+
+
+   <script>
+    function formatAmount() {
+        var input = document.getElementById('floatingInput');
+        var value = parseFloat(input.value).toFixed(2);
+        input.value = value;
+    }
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const phoneNumberInput = document.getElementById('username');
+            phoneNumberInput.addEventListener('input', function() {
+                if (!this.value.startsWith('+268')) {
+                    this.value = '+268' + this.value;
+                }
+                if (this.value.length > 12) { // Ensure the length doesn't exceed the correct format
+                    this.value = this.value.slice(0, 12);
+                }
+            });
+
+            
+            
+            // Attach validatePhoneNumber to form submit
+            document.querySelector('form').onsubmit = validatePhoneNumber;
+        });
+    </script>
+
+
+    
+<script>
+    function validatePins() {
+    const newPin = document.getElementById('new_pin').value;
+    const confirmPin = document.getElementById('confirm_pin').value;
+    const errorMessage = document.getElementById('error-message');
+
+    if (newPin !== confirmPin) {
+        errorMessage.style.display = 'block';
+        return false;  // Prevent form submission
+        } else {
+        errorMessage.style.display = 'none';
+        return true;  // Allow form submission
+        }
+    }
+
+    document.getElementById('new_pin').addEventListener('input', validatePins);
+    document.getElementById('confirm_pin').addEventListener('input', validatePins);
+</script>
+
+
+
+            
+       
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const mainContent = document.querySelector('.content');
+                mainContent.classList.add('animate__animated', 'animate__fadeIn');
+        
+                // Example function to handle page transitions
+                function handlePageTransition() {
+                    mainContent.classList.remove('animate__fadeIn');
+                    mainContent.classList.add('animate__fadeOut');
+        
+                    // Add event listener to detect end of animation
+                    mainContent.addEventListener('animationend', function() {
+                        // Load new content here
+                        mainContent.classList.remove('animate__fadeOut');
+                        mainContent.classList.add('animate__fadeIn');
+                    }, { once: true });
+                }
+        
+                // Call handlePageTransition() on certain actions (e.g., button click)
+                document.querySelector('.some-button').addEventListener('click', handlePageTransition);
+            });
+        </script>
+        
+
+
+            <!-- Countdown Modal -->
+            <div id="countdownModal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <p>You will be logged out in <span id="countdown">10</span> seconds due to inactivity.</p>
+                    <button id="stayLoggedIn">Stay Logged In</button>
+                </div>
+            </div>
+        
+            <!-- Error Modal -->
+            <div id="errorModal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <p id="modal-message"></p>
+                </div>
+            </div>
+        
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    let timeout;
+                    let countdownTimer;
+                
+                    function resetTimeout() {
+                        clearTimeout(timeout);
+                        clearInterval(countdownTimer);
+                        timeout = setTimeout(showCountdown, 0.2 * 60 * 1000); // 20 minutes of inactivity
+                    }
+                
+                    function showCountdown() {
+                        let countdownModal = document.getElementById("countdownModal");
+                        let countdownElement = document.getElementById("countdown");
+                        let timeLeft = 10;
+                
+                        countdownElement.textContent = timeLeft;
+                        countdownModal.style.display = "block";
+                
+                        countdownTimer = setInterval(function () {
+                            timeLeft -= 1;
+                            countdownElement.textContent = timeLeft;
+                
+                            // Check if the user is still logged in before proceeding
+                            fetch("{% url 'check_user_session' %}")
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error('Network response was not ok ' + response.statusText);
+                                    }
+                                    return response.json();
+                                })
+                                .then(data => {
+                                    if (data.logged_in) {
+                                        if (timeLeft <= 0) {
+                                            clearInterval(countdownTimer);
+                                            window.location.href = "{% url 'logout' %}"; // Redirect to logout
+                                        }
+                                    } else {
+                                        clearInterval(countdownTimer);
+                                        countdownModal.style.display = "none";
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Fetch error:', error);
+                                    clearInterval(countdownTimer);
+                                    countdownModal.style.display = "none";
+                                });
+                        }, 1000);
+                    }
+                
+                    // Reset the timeout on any user interaction
+                    window.onload = resetTimeout;
+                    document.onmousemove = resetTimeout;
+                    document.onkeypress = resetTimeout;
+                    document.ontouchstart = resetTimeout;  // for mobile
+                
+                    // Stop the countdown and reset timeout when the "Stay Logged In" button is clicked
+                    document.getElementById("stayLoggedIn").onclick = function() {
+                        clearInterval(countdownTimer);
+                        document.getElementById("countdownModal").style.display = "none";
+                        resetTimeout();
+                    }
+                
+                    // Add event listeners to all elements with the class "close"
+                    document.querySelectorAll('.close').forEach(button => {
+                        button.onclick = function() {
+                            this.closest('.modal').style.display = "none";
+                        }
+                    });
+                
+                    // Stop the countdown and reset timeout when clicking outside the modal
+                    window.onclick = function(event) {
+                        if (event.target.classList.contains('modal')) {
+                            clearInterval(countdownTimer);
+                            event.target.style.display = "none";
+                            resetTimeout();
+                        }
+                    }
+                
+                    resetTimeout(); // Initialize the timeout on page load
+                
+                    // Error modal logic
+                    const errorModal = document.getElementById("errorModal");
+                    const modalMessage = document.getElementById("modal-message");
+                
+                    // Display backend validation errors in the modal
+                    {% if form.errors %}
+                        let errorMessages = "";
+                        {% for field, errors in form.errors.items %}
+                            errorMessages += "{{ field }}: {{ errors|escapejs }}<br>";
+                        {% endfor %}
+                        modalMessage.innerHTML = errorMessages;
+                        errorModal.style.display = "block";
+                    {% endif %}
+                
+                    // Display specific error passed in the context
+                    {% if error %}
+                        modalMessage.innerHTML = "{{ error|escapejs }}";
+                        errorModal.style.display = "block";
+                    {% endif %}
+                });
+                </script>
+                
+        
+        
+
+        <!--<div id="preloader"></div>  -->

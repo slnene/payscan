@@ -1,0 +1,122 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+    {% include "payscan/includes/head.html" %}
+    <link href="{% static 'css/signin.css' %}" rel="stylesheet">
+
+   
+
+<body id="main" data-barba="wrapper" class="text-center m-scene">
+        <main id="main-content" class="m-page form-signin">
+            {% include "payscan/includes/header_beforelogin.html" %}
+
+    <section id="qrcode_scanner" style="margin-top: 10%;">
+      <div>
+        <h3>Align with Payscan QR code to proceed</h3>
+      </div>
+      <div class="scanner-container">
+        <div id="qr-reader" style="width:100%;height:100%;position:relative;">
+          <div class="spinner-grow text-light" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <div id="qr-reader-results"></div>
+        </div>
+    <div id="scanline"></div>
+      </div>
+      <button class="btn btn-primary" onclick="toggleFlashlight()"><img src="{% static 'img/lightning.svg' %}" /></button>
+      {% include "payscan/includes/footer_bottom.html" %}
+    </section>
+    </main>
+  </div>
+  <a href="#" class="scroll-top d-flex align-items-center justify-content-center">
+      <i class="bi bi-arrow-up-short"></i>
+  </a>
+
+  
+
+{% include "payscan/includes/foot.html" %}
+
+  <audio id="scan-sound" src="{% static 'sounds/mixkit-alert-quick-chime-766.wav' %}" preload="auto"></audio>
+
+  <script src="{% static 'js/html5-qrcode.min.js' %}"></script>
+<script type="text/javascript">
+    function toggleFlashlight() {
+        Android.toggleFlashlight();
+    }
+
+    const html5QrCode = new Html5Qrcode("qr-reader");
+    let lastResult, countResults = 0;
+    let currentDeviceIndex = 0;
+    let devices = [];
+    const audio = document.getElementById('scan-sound');
+
+    function onScanSuccess(qrCodeMessage) {
+        if (qrCodeMessage !== lastResult) {
+            lastResult = qrCodeMessage;
+            countResults++;
+            audio.play();  // Play sound on successful scan
+            window.location.href = qrCodeMessage;
+        }
+    }
+
+    function startScanning(deviceId) {
+        html5QrCode.start(
+            deviceId,
+            { fps: 30, qrbox: { width: 200, height: 200 } },
+            onScanSuccess,
+            console.error
+        ).catch(console.error);
+    }
+
+    Html5Qrcode.getCameras().then(deviceList => {
+        if (deviceList && deviceList.length) {
+            devices = deviceList;
+            startScanning(devices[currentDeviceIndex].id);
+        }
+    }).catch(console.error);
+
+    document.getElementById('camera-toggle').addEventListener('click', () => {
+        html5QrCode.stop().then(() => {
+            currentDeviceIndex = (currentDeviceIndex + 1) % devices.length;
+            startScanning(devices[currentDeviceIndex].id);
+        }).catch(console.error);
+    });
+
+    document.getElementById('flash-light').addEventListener('click', () => {
+        html5QrCode.getRunningTrack().then(track => {
+            if (track.getCapabilities().torch) {
+                html5QrCode.toggleFlash().then(() => {
+                    console.log("Flash toggled");
+                }).catch(err => {
+                    console.error("Error toggling flash:", err);
+                });
+            } else {
+                console.log("Flashlight not supported on this device.");
+            }
+        }).catch(err => {
+            console.error("Error getting track capabilities:", err);
+        });
+    });
+
+    const scanline = document.getElementById('scanline');
+    const reader = document.getElementById('qr-reader');
+    let direction = 1;
+    const speed = 2;
+
+    function animateScanline() {
+        const readerRect = reader.getBoundingClientRect();
+        const scanlineRect = scanline.getBoundingClientRect();
+        if (scanlineRect.top >= readerRect.bottom) {
+            direction = -1;
+        } else if (scanlineRect.top <= readerRect.top) {
+            direction = 1;
+        }
+        scanline.style.top = (scanlineRect.top - readerRect.top + direction * speed) + 'px';
+        requestAnimationFrame(animateScanline);
+    }
+
+    animateScanline();
+</script>
+
+  </body>
+</html>

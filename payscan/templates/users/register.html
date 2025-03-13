@@ -1,107 +1,93 @@
 {% load static %}
 <!doctype html>
-
 <html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  
-    <title>PayScan</title>
-    <meta content="" name="description">
-    <meta content="" name="keywords">
-  
-    <!-- Favicons -->
-    <link href="{% static 'img/payscanlogo.jpg' %}" rel="icon">
-    <link href="{% static 'img/payscanlogo.jpg' %}" rel="apple-touch-icon">
-  
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600;1,700&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Raleway:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
-        rel="stylesheet">
-  
-        
-        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
-    
-        <link href="{% static 'css/bootstrap-icons.css' %}" rel="stylesheet">
-        <link href="{% static 'css/aos.css' %}" rel="stylesheet">
-        <link href="{% static 'css/glightbox.min.css' %}" rel="stylesheet">
-        <link href="{% static 'css/swiper-bundle.min.css' %}" rel="stylesheet">
-    
-        <!-- Template Main CSS File -->
-        <link href="{% static 'css/main.css' %}" rel="stylesheet">
-        <link href="{% static 'css/signin.css' %}" rel="stylesheet">
-  </head>
-
-  <style>
-    .header{
-     height: 48px;
-     margin-bottom:40px;
-    }
-  </style>
-  <body class="text-center">
-   
-    <main class="form-signin">
-        {% include "payscan/includes/header_beforelogin.html" %}
-        
+    {% include "payscan/includes/head.html" %}
+    <link href="{% static 'css/signin.css' %}" rel="stylesheet">
+    <style>
+        .header {
+            height: 48px;
+            margin-bottom: 40px;
+        }
+        .pholder {
+            margin: 0;
+        }
+        .phone-container {
+            display: flex;
+        }
+        .phone-container input[type="text"] {
+            flex: 1;
+        }
+        .phone-prefix {
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-right: none;
+            border-radius: 0.25rem 0 0 0.25rem;
+            padding: 0.375rem 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .phone-input {
+            border-radius: 0 0.25rem 0.25rem 0;
+        }
+    </style>
+    <body id="main" data-barba="wrapper" class="text-center m-scene">
+        <main id="main-content" class="m-page form-signin">
+            {% include "payscan/includes/header_beforelogin.html" %}
             <h3>Create your account!</h3>
-           
-             <form method="post">
+            <form method="post" onsubmit="return validatePhoneNumber()">
                 {% csrf_token %}
-                <h6 class="h6 mb-3 fw-normal"><b>Please Enter The Required Details and Press Register</b> </h6>
-
+                <h6 class="h6 mb-3 fw-normal"><b>Please Enter The Required Details and Press Register</b></h6>
                 {% if form.non_field_errors %}
                 <div class="alert alert-danger">
                     {{ form.non_field_errors }}
                 </div>
-            {% endif %}
-
+                {% endif %}
+                
+                {% if form.errors %} 
+                <div style="color: red;"> 
+                    <ul> 
+                        {% for field, errors in form.errors.items %} 
+                        <li>{{ field }}: 
+                            <ul> 
+                                
+                                {% for error in errors %} 
+                                <li>{{ error }}</li> 
+                                {% endfor %} 
+                            </ul> 
+                        </li> {% endfor %} 
+                    </ul> 
+                </div> 
+                {% endif %}
+                
+            
+                
                 <div class="form-group" hidden>
-                    <label for="username">email</label>
-                    <input type="text" class="form-control" value="Payscan_user" id="email" name="email" placeholder="Create A Username (use only letters and numbers)" Required>
+                    <label for="email">Email</label>
+                    <input type="text" class="form-control" value="Payscan_user" id="email" name="email" placeholder="Create A Username (use only letters and numbers)" required>
                 </div>
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="fname" name="first_name" placeholder="Name" required>
+                    <label for="fname"><h6 class="pholder">Name</h6></label>
+                </div>
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="lname" name="last_name" placeholder="Surname" required>
+                    <label for="lname"><h6 class="pholder">Surname</h6></label>
+                </div>
+                <div class="form-floating position-relative">
+                 <!--   <div class="phone-container">
+                     <div class="phone-prefix">+268</div> -->
+                        <input type="text" class="form-control phone-input" id="username" name="username" placeholder="12345678" required>
+                        <label for="phone_number"><h6 class="pholder">Phone Number</h6></label>
 
-                <div class="form-floating">
-                  <input type="text" class="form-control"  id="fname" name="first_name" placeholder="Name">
-                  <label for="floatingInput"><h6 class="pholder">Name<h6></label>
-              </div>
-    
-              <div class="form-floating">
-                <input type="text" class="form-control" id="lname" name="last_name" placeholder="Surname">
-                <label for="floatingInput"><h6 class="pholder">Surname<h6></label>
-            </div>
-                <div class="form-floating">
-                    <input type="number" class="form-control" id="username" name="username" placeholder="Phone number">
-                    <label for="floatingInput"><h6 class="pholder">Phone Number<h6></label>
-                </div>
-                <div class="form-floating">
-                    <input type="Password" class="form-control" id="pass1" name="password1" placeholder="Password">
-                    <label for="floatingInput"><h6 class="pholder">Password<h6></label>
-                </div>
-                <div class="form-floating">
-                    <input type="Password" class="form-control" id="pass1" name="password2" placeholder="Password">
-                    <label for="floatingInput"><h6 class="pholder">Password<h6></label>
-                </div>
-            
-                </br>
-            
+                    </div>
+                <!--</div>-->
+                <br>
                 <input class="w-100 btn btn-lg btn-primary" type="submit" value="Register">
-    
             </form>
-
-            {% include "payscan/includes/footer.html" %}
-
-    </main>
-    <script src="{% static 'js/bootstrap.bundle.min.js' %} "></script>
-    <script src="{% static 'js/aos.js' %} "></script>
-    <script src="{% static 'js/glightbox.min.js' %} "></script>
-    <script src="{% static 'js/purecounter_vanilla.js' %} "></script>
-    <script src="{% static 'js/swiper-bundle.min.js' %} "></script>
-    <script src="{% static 'js/isotope.pkgd.min.js' %} "></script>
-    
-    <!-- Template Main JS File -->
-    <script src="{% static 'js/main.js' %} "></script>
-</body>
-
+            {% include "payscan/includes/footer_bottom.html" %}
+        </main>
+        {% include "payscan/includes/foot.html" %}
+ 
+    </body>
 </html>

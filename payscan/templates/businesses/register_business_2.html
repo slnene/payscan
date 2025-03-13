@@ -2,93 +2,151 @@
 <!doctype html>
 
 <html lang="en">
+    {% include "payscan/includes/head.html" %}
+    <link href="{% static 'css/signin.css' %}" rel="stylesheet">
 
-<head>
-    <meta charset="utf-8">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  
-    <title>PayScan</title>
-    <meta content="" name="description">
-    <meta content="" name="keywords">
-  
-    <!-- Favicons -->
-    <link href="{% static 'img/payscanlogo.jpg' %}" rel="icon">
-    <link href="{% static 'img/payscanlogo.jpg' %}" rel="apple-touch-icon">
-  
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600;1,700&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Raleway:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
-        rel="stylesheet">
-  
-        
-        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
-    
-        <link href="{% static 'css/bootstrap-icons.css' %}" rel="stylesheet">
-        <link href="{% static 'css/aos.css' %}" rel="stylesheet">
-        <link href="{% static 'css/glightbox.min.css' %}" rel="stylesheet">
-        <link href="{% static 'css/swiper-bundle.min.css' %}" rel="stylesheet">
-    
-        <!-- Template Main CSS File -->
-        <link href="{% static 'css/main.css' %}" rel="stylesheet">
-        <link href="{% static 'css/signin.css' %}" rel="stylesheet">
-  </head>
+    <style>
+        .header {
+            height: 48px;
+            margin-bottom: 40px;
+        }
 
-  <style>
-    .header{
-     height: 48px;
-     margin-bottom:40px;
-    }
-  </style>
-  <body class="text-center">
-    {% include "payscan/includes/header_beforelogin.html" %}
+        /* Style for the popup modal */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            padding-top: 60px;
+        }
 
-    <main class="form-signin">
-        
-           
-        <h3>Create business account</h3>
+        /* Modal Content/Box */
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+        }
 
-        <form method="post">
-            {% csrf_token %}
-            <h6 class="h6 mb-3 fw-normal"><b>Please Enter The Required Details and Press Register</b></h6>
-        
-            {% if form.non_field_errors %}
-                <div class="alert alert-danger">
-                    {{ form.non_field_errors }}
+        /* The Close Button */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+
+    <body id="main" data-barba="wrapper" class="text-center m-scene">
+        {% include "payscan/includes/header_beforelogin.html" %}
+
+        <main id="main-content" class="m-page form-signin">
+
+            <h3>Create business account</h3>
+
+            <form method="post" id="businessForm">
+                {% csrf_token %}
+                <h6 class="h6 mb-3 fw-normal"><b>Please Enter The Required Details and Press Register</b></h6>
+
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="businessName" name="business_name" placeholder="Name">
+                    <label for="businessName"><h6 class="pholder">Business Name</h6></label>
                 </div>
-            {% endif %}
-        
-            {% if form.business_name.errors %}
-                <div class="alert alert-danger">
-                    {{ form.business_name.errors }}
-                </div>
-            {% endif %}
-        
-        
-            <div class="form-floating">
-                <input type="text" class="form-control" id="fname" name="business_name" placeholder="Name">
-                <label for="fname"><h6 class="pholder">Business Name</h6></label>
-            </div>
-        
-      
-        
-            <br>
-        
-            <input class="w-100 btn btn-lg btn-primary" type="submit" value="Register">
-        </form>
-        
+
+                <br>
+
+                <input class="w-100 btn btn-lg btn-primary" type="submit" value="Register">
+            </form>
+
             {% include "payscan/includes/footer_bottom.html" %}
 
-    </main>
-    <script src="{% static 'js/bootstrap.bundle.min.js' %} "></script>
-    <script src="{% static 'js/aos.js' %} "></script>
-    <script src="{% static 'js/glightbox.min.js' %} "></script>
-    <script src="{% static 'js/purecounter_vanilla.js' %} "></script>
-    <script src="{% static 'js/swiper-bundle.min.js' %} "></script>
-    <script src="{% static 'js/isotope.pkgd.min.js' %} "></script>
-    
-    <!-- Template Main JS File -->
-    <script src="{% static 'js/main.js' %} "></script>
-</body>
+            <!-- The Modal -->
+            <div id="errorModal" class="modal">
 
+                <!-- Modal content -->
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <p id="modal-message"></p>
+                </div>
+
+            </div>
+        </main>
+        {% include "payscan/includes/foot.html" %}
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const form = document.getElementById("businessForm");
+                const modal = document.getElementById("errorModal");
+                const span = document.getElementsByClassName("close")[0];
+                const modalMessage = document.getElementById("modal-message");
+
+                form.addEventListener("submit", function (event) {
+                    event.preventDefault(); // Prevent the form from submitting right away
+                    const businessName = document.getElementById("businessName").value;
+                    let hasError = false;
+                    let errorMessage = "";
+
+                    if (!businessName) {
+                        errorMessage += "Business name is required.<br>";
+                        hasError = true;
+                    }
+
+                    if (!hasError) {
+                        // Make AJAX call to check if the user already owns a business
+                        fetch("{% url 'check_business_ownership' %}", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            },
+                            body: JSON.stringify({ user: "{{ request.user.id }}" })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.exists) {
+                                errorMessage += "Phone number can only be registered to one business.<br>";
+                                hasError = true;
+                                modalMessage.innerHTML = errorMessage;
+                                modal.style.display = "block";
+                            } else {
+                                form.submit(); // Submit the form if no errors
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
+                    }
+
+                    if (hasError) {
+                        modalMessage.innerHTML = errorMessage;
+                        modal.style.display = "block";
+                    }
+                });
+
+                // When the user clicks on <span> (x), close the modal
+                span.onclick = function() {
+                    modal.style.display = "none";
+                }
+
+                // When the user clicks anywhere outside of the modal, close it
+                window.onclick = function(event) {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                    }
+                }
+            });
+        </script>
+    </body>
 </html>

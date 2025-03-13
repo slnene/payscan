@@ -15,53 +15,57 @@ from django.contrib.auth import authenticate
 
 
 
-#########business########
+#########business########9
 
-class BusinessRegistrationForm(UserCreationForm):
-    business_name = forms.CharField(max_length=255)
-    username = forms.CharField(max_length=100)
-    password1 = forms.CharField(widget=forms.PasswordInput)
-    password2 = forms.CharField(widget=forms.PasswordInput)
-    otp = forms.CharField(max_length=6, required=True)
-  
+class BusinessRegistrationForm(forms.Form):
+    email = forms.CharField(max_length=100)
+    username = forms.CharField(max_length=100)  # Phone number
+    first_name = forms.CharField(max_length=100)
+    last_name = forms.CharField(max_length=100)
+    business_name = forms.CharField(max_length=100)
+    
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
     def clean(self):
         cleaned_data = super().clean()
-        password1 = cleaned_data.get('password1')
-        password2 = cleaned_data.get('password2')
+        business_name = cleaned_data.get('business_name')
 
-        if password1 and password2 and password1 != password2:
-            raise ValidationError("Passwords do not match")
+        # Check if the user already owns a business
+        if self.user:
+            payscan_user = PayscanUser.objects.get(user=self.user)
+            if Business.objects.filter(owner=payscan_user).exists():
+                raise forms.ValidationError("Phone number can only be registered to one business")
 
-    def clean_business_name(self):
-        business_name = self.cleaned_data.get('business_name')
-        if Business.objects.filter(name=business_name).exists():
-            raise ValidationError('Business name already exists.')
-        
-        return business_name
+        return cleaned_data
+
     
-    def username(self):
-        username = self.cleaned_data.get('username')
-        if Business.objects.filter(name=username).exists():
-            raise ValidationError('Phone number already exists.')
-        return username
-   
-
+    
+    
 class BusinessRegistrationForm_2(forms.Form):
-    business_name = forms.CharField(max_length=255)
-   
-        
-    def clean_business_name(self):
-        business_name = self.cleaned_data.get('business_name')
-        if Business.objects.filter(name=business_name).exists():
-            raise ValidationError('Business name already exists.')
-        
-        return business_name
-    
+    business_name = forms.CharField(
+        max_length=100,
+        required=True,
+        widget=forms.TextInput(attrs={'placeholder': 'Enter your business name'})
+    )
 
-   
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
 
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.models import User
+    def clean(self):
+        cleaned_data = super().clean()
+        business_name = cleaned_data.get('business_name')
+
+        # Check if the user already owns a business
+        if self.user:
+            payscan_user = PayscanUser.objects.get(user=self.user)
+            if Business.objects.filter(owner=payscan_user).exists():
+                raise forms.ValidationError("Phone number can only be registered to one business")
+
+        return cleaned_data
+
 
 class BusinessLoginForm(AuthenticationForm):
     class Meta:

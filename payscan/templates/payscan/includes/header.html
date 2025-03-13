@@ -1,5 +1,5 @@
 {% load static %} 
-<header id="header" class="header d-flex align-items-center fixed-top">
+<header id="header" class="header d-flex align-items-center fixed-top animate__fadeInDown ">
     <div class="container-fluid container-xl d-flex align-items-center justify-content-between">
         <a href="/afterlogin/" class="logo d-flex align-items-center">
             <!-- Uncomment the line below if you also wish to use an image logo -->
@@ -8,28 +8,31 @@
         <div>
             <nav id="navbar" class="navbar">
                 <ul>
-                    <li><a href="/scanner"><button class="btn-get-started" style="color:white;">Make Payment</button></a></li>
+                    <li><a href="/scanner"><button class="btn-get-started">Make Payment</button></a></li>
                     <li class="dropdown">
                         <a href="#" class="dropbtn">Dashboard</a>
                         <div class="dropdown-content">
-                            <a href="/afterlogin_agent/">Agent Dashboard</a>
                             <a href="/afterlogin/">Customer Dashboard</a>
                             <a href="/afterlogin_business/">Business Dashboard</a>
+                            <a href="/afterlogin_agent/">Agent Dashboard</a>
                         </div>
+                        <li><a href="/logout/">Logout</a></li>
+
                     </li>
-                    <li><a href="/logout">Logout</a></li>
                 </ul>
             </nav>
+            
             <i class="mobile-nav-toggle mobile-nav-show bi bi-list"></i>
             <i class="mobile-nav-toggle mobile-nav-hide d-none bi bi-x"></i>
         </div>
     </div>
 </header>
+</div>
+
 
 <style>
     .dropdown {
-        position: relative;
-        display: inline-block;
+    
     }
 
     .dropdown-content {
@@ -60,3 +63,6 @@
         background-color: #3e8e41;
     }
 </style>
+
+
+<div class="animate__animated animate__fadeIn">

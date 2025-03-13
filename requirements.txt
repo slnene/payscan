@@ -11,3 +11,11 @@ Pillow
 django-axes
 twilio
 django-twilio
+python-decouple
+choco install ngrok
+uni-sdk
+django-ratelimit
+django-redis
+unimatrix
+firebase-admin
+

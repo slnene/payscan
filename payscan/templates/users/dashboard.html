@@ -1,167 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
-    {% load static %} 
-<head>
-    <meta charset="utf-8">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+{% load static %}
 
-    <title>PayScan</title>
-    <meta content="" name="description">
-    <meta content="" name="keywords">
+{% include "payscan/includes/head.html" %}
+<style>
+    .btn-outline-primary {
+    --bs-btn-color: #4d1616;
+    --bs-btn-border-color: #e9d8d8;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #4d1616;
+    --bs-btn-hover-border-color: #e9d8d8;
+    --bs-btn-focus-shadow-rgb: 13,110,253;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #e9d8d8;
+    --bs-btn-active-border-color: #4d1616;
+    --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+    --bs-btn-disabled-color: grey;
+    --bs-btn-disabled-bg: transparent;
+    --bs-btn-disabled-border-color: #0d6efd;
+    --bs-gradient: none;
+}
+</style>
 
-    <!-- Favicons -->
-    <link href="{% static 'img/payscanlogo.jpg' %}" rel="icon">
-    <link href="{% static 'img/payscanlogo.jpg' %}" rel="apple-touch-icon">
-
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600;1,700&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Raleway:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
-        rel="stylesheet">
-  
+<body id="main" data-barba="wrapper" class="text-center m-scene">
+    <!-- Header -->
+        {% include "payscan/includes/header.html" %}
         
-        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+        <!-- Main content wrapper for SmoothState.js -->
+            <main id="main-content" class="m-page form-signin">  
+                <!-- Your main page content -->
+                <!-- Hero Section -->
+                <section id="hero" class="hero">
+                    <center>
+                        <div class="section-header">
+                            <h4 class="btn px-3" style="background:rgb(233,216,216); color:#4d1616; margin-top:10%;">
+                                {{ user.first_name }} {{ user.last_name }}<br>
+                                <strong>BALANCES</strong><br>
+                                MOMO WALLET: <strong>{{ balance.availableBalance }} {{ balance.currency }}</strong> <br>
+                            </h4>
+                        </div>
+                    </center>
+                </section>
+                <!-- End Hero Section -->
+                <!-- Transaction History Section -->
+                <section id="transaction-history" class="animate__animated animate__fadeInUp">
+                    <div class="section-header">
+                        <h2>Transactions</h2>
+                        <div class="container">
+                            <div class="form-group">
+                                <label for="transactionDate">Transaction Date:</label>
+                                <input type="date" id="transactionDate" name="transaction_date" value="{{ today|date:"Y-m-d" }}">
+                            </div>
+                            <button onclick="fetchAndFilterTransactions()">Filter</button>
+                        </div>
+                        
+                        
+                    </div>
+                    <table class="table table-borderless">
+                        <thead class="table-danger" style="font-size: smaller;">
+                            <tr>
+                                <th scope="col">Trans ID</th>
+                                <th scope="col">Recipient ID</th>
+                                <th scope="col">Amount</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody style="background:#4d1616; font-size: xx-small; font-weight: bold;">
+                            {% for transactions in transactions %}
+                            <tr class="" style="background-color: #e9d8d8;">
+                                <td>{{ transactions.id }}</td>
+                                <td>{{ transactions.business.name }} ({{ transactions.business.id }})</td>
+                                <td>SZL {{ transactions.amount }}</td>
+                                <td>{{ transactions.transaction_type }}</td>
+                                <td>{{ transactions.timestamp }}</td>
+                            {% empty %}
+                                <td colspan="5">No transactions found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </section>
+            </main>
+        </div>
     
-        <link href="{% static 'css/bootstrap-icons.css' %}" rel="stylesheet">
-        <link href="{% static 'css/aos.css' %}" rel="stylesheet">
-        <link href="{% static 'css/glightbox.min.css' %}" rel="stylesheet">
-        <link href="{% static 'css/swiper-bundle.min.css' %}" rel="stylesheet">
-        <link href="{% static 'css/cheatsheet.css' %}" rel="stylesheet">
-
-    
-        <!-- Template Main CSS File -->
-        <link href="{% static 'css/main.css' %}" rel="stylesheet">
-
-    <!-- =======================================================
-  * Template Name: Impact - v1.2.0
-  * Template URL: https://bootstrapmade.com/impact-bootstrap-business-website-template/
-  * Author: BootstrapMade.com
-  * License: https://bootstrapmade.com/license/
-  ======================================================== -->
-</head>
-
-<body>
-
-    <!-- ======= Header ======= -->
-    {% include "payscan/includes/header.html" %}
-
-
-    <style>
-        .btn-outline-primary {
-        --bs-btn-color: #4d1616;
-        --bs-btn-border-color: #e9d8d8;
-        --bs-btn-hover-color: #fff;
-        --bs-btn-hover-bg: #4d1616;
-        --bs-btn-hover-border-color: #e9d8d8;
-        --bs-btn-focus-shadow-rgb: 13,110,253;
-        --bs-btn-active-color: #fff;
-        --bs-btn-active-bg: #e9d8d8;
-        --bs-btn-active-border-color: #4d1616;
-        --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
-        --bs-btn-disabled-color: grey;
-        --bs-btn-disabled-bg: transparent;
-        --bs-btn-disabled-border-color: #0d6efd;
-        --bs-gradient: none;
-    }
-    </style>
-    
-
-    <!-- ======= Hero Section ======= -->
-    <section id="hero" class="hero">
+        <!-- Footer -->
+        {% include "payscan/includes/footer_bottom.html" %}
         
-    <center><div class="section-header"><h4 class="btn  px-3" style="background:rgb(233,216,216); color:#4d1616; margin-top:10%;">
-     
-        {{ user.first_name  }}   {{user.last_name}}<br>
-        <strong> BALANCES</strong><br>
-        PAYSCAN WALLET:<strong> SZL {{ user.payscanuser.balance }}</strong> <br>
-        MOMO WALLET:<strong> SZL 00.00 </strong> <br>
+        <a href="#" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
     
-    </h4></div>
-    </center>
-    </section>
-    <!-- End Hero Section -->
-
-    <main id="main">
-
-        <section id="">
-            <div class="section-header">
-                    <h2>Transaction History</h2>
-                
-            </div>
-            
-                <table class="table  table-borderless">
-                  <thead class="table-danger" style="
-                  font-size: smaller; 
-              ">
-                        <tr >
-                            <th scope="col">Trans ID</th>
-                            <th scope="col">Receipent ID</th>
-                            <th scope="col">Amount</th>
-                            <th scope="col">Type</th>
-                            <th scope="col">Date</th>
-                        </tr>
-                    </thead>
-                    <tbody style="background:#4d1616; background:#4d1616; font-size: xx-small; font-weight: bold;">
-
-                        {% for transactions in transactions %}
-                        <tr class="" style=" background-color: #e9d8d8 ;">
-        
-            <td>
-                {{transactions.id}}
-            </td>
-            
-            <td>
-                {{ transactions.business.name }} ( {{ transactions.business.id }} )
-            </td>
-            <td>
-               SZL {{transactions.amount}}
-           
-            </td>
-            <td>
-                {{transactions.transaction_type}}
-            </td>
-            <td>
-                {{transactions.timestamp}}
-            </td>
-            
-        {% empty %}
-            <td>No transactions found.</td>
-       
-                        </tr>
-                        {% endfor %}
-              
-                    </tbody>
-                </table>
-            </div>
-        
-        </section>
-
-
-    </main>
-    <!-- End #main -->
-
-    <!-- ======= Footer ======= -->   
-     {% include "payscan/includes/footer.html" %}
-  <!-- End Footer -->
-
-    <a href="# " class="scroll-top d-flex align-items-center justify-content-center "><i class="bi bi-arrow-up-short "></i></a>
-
-    <div id="preloader "></div>
-
-    <!-- Vendor JS Files -->
-
-    <script src="{% static 'js/bootstrap.bundle.min.js' %} "></script>
-    <script src="{% static 'js/aos.js' %} "></script>
-    <script src="{% static 'js/glightbox.min.js' %} "></script>
-    <script src="{% static 'js/purecounter_vanilla.js' %} "></script>
-    <script src="{% static 'js/swiper-bundle.min.js' %} "></script>
-    <script src="{% static 'js/isotope.pkgd.min.js' %} "></script>
-    <script src="{% static 'js/cheatsheet.js' %} "></script>
-
-    <!-- Template Main JS File -->
-    <script src="{% static 'js/main.js' %} "></script>
-
+        <!-- Vendor JS Files -->
+        {% include "payscan/includes/foot.html" %}
 </body>
-
 </html>
-   

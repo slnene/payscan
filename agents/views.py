@@ -9,7 +9,7 @@ from agents.models import Agent
 from payscan.models import Transaction
 
 from django.contrib.auth.decorators import login_required
-from .forms import AgentRegisterForm,AgentLoginForm,AgentBusinessRegistrationForm
+from .forms import AgentRegisterForm,AgentLoginForm,AgentBusinessRegistrationForm,AgentRegisterForm2
 
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -49,13 +49,15 @@ from twilio.rest import Client
 from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from payscan.utils import send_pin,generate_pin
+from django.contrib.auth import update_session_auth_hash
+import os
 
 
-def hex_to_rgb(hex_color):
-    hex_color = hex_color.lstrip('#')
-    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
 
-#####Agent Suite###
+
+##################################### AGENTS / REGISTRAION AND DASHBOARD ###############################
 
 def register_agent(request):
     if request.method == 'POST':
@@ -65,37 +67,60 @@ def register_agent(request):
             username = form.cleaned_data['username']
             first_name = form.cleaned_data['first_name']
             last_name = form.cleaned_data['last_name']
-            password = form.cleaned_data['password1']
-                            
-            user = User.objects.create_user(email=email, username=username, first_name=first_name, last_name=last_name, password=password)          
-            payscan_user = PayscanUser.objects.create(user=user)
+            Id_number = form.cleaned_data.get('Id_number')          
+            priority= 1
+            phone_number = username
             
-            Agent.objects.create(agentuser=payscan_user)
+            if not phone_number.startswith('+'):
+                phone_number = f'+268{phone_number}'
+            pin = generate_pin()
+            send_pin(phone_number, pin)
+            password = pin  # Default pin as password
 
-            messages.success(request, 'Registration successful! Please log in.')
-            return redirect('login_agent')
+            user = User.objects.create_user(
+                email=email, 
+                username=username, 
+                first_name=first_name, 
+                last_name=last_name, 
+                password=password
+            ) 
+            payscan_user=PayscanUser.objects.create(user=user, default_pin=pin)  # Save default PIN
+            agent = Agent.objects.create(agentuser=payscan_user,Id_number=Id_number, priority=1)
+            
+            request.session['pin'] = pin
+            request.session['form_data'] = form.cleaned_data
+            print(f'PIN: {pin}')
+            messages.success(request, 'Registration successful! Login with default PIN and reset your PIN on first login.')
+            return redirect('login')
         else:
-            print("Form is not valid:", form.errors)  # Debug statement
+            print("Form errors:", form.errors)
     else:
         form = AgentRegisterForm()
     return render(request, 'agents/register_agent.html', {'form': form})
 
+@login_required
+def reset_pin(request):
+    if request.method == 'POST':
+        pin = request.POST.get('new_pin')
+        user = request.user
+        user.set_password(pin)  # Reset the user's PIN
+        user.save()
+        messages.success(request, 'PIN reset successful!')
+        return redirect('login')
+    return render(request, 'payscan/reset_pin.html')
+
 
 def register_agent_2(request):
     if request.method == 'POST':
-        form = AgentRegisterForm(request.POST)
+        form = AgentRegisterForm2(request.POST)
         if form.is_valid():
-            
-            payscan_user=PayscanUser.objects.create(user=request.user)
-            Agent.objects.create(agentuser=payscan_user)
-
-            return redirect('login_agent')     
+            Id_number = form.cleaned_data.get('Id_number')          
+            payscan_user = PayscanUser.objects.get(user=request.user)
+            Agent.objects.create(agentuser=payscan_user,Id_number=Id_number)
+            return redirect('agent_dashboard')
     else:
-            # Handle the case where the passwords do not match
-        form = AgentRegisterForm()            
-    return render(request, 'agents/register_agent.html', {'form': form})
-
-
+        form = AgentRegisterForm2()
+        return render(request, 'agents/register_agent_2.html', {'form': form, 'user': request.user})
 
 
 @login_required
@@ -123,21 +148,32 @@ def agent_dashboard(request):
     except PayscanUser.DoesNotExist:
         return redirect('login_agent')
 
-
-
-
-def generate_default_password(length=8):
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
-
-def send_sms(phone_number, message):
-    account_sid = 'your_account_sid'
-    auth_token = 'your_auth_token'
-    client = Client(account_sid, auth_token)
-    client.messages.create(
-        body=message,
-        from_='+1234567890',
-        to=phone_number
-    )
+def get_businesses(request):
+    if request.method == 'GET':
+        businesses = Business.objects.all().select_related('owner')
+        businesses_data = [
+            {
+                'name': business.name,
+                'owner': {
+                    'user': {
+                        'username': business.owner.user.username,
+                        'first_name': business.owner.user.first_name,
+                        'last_name': business.owner.user.last_name,
+                    }
+                }
+            }
+            for business in businesses
+        ]
+        return JsonResponse({'businesses': businesses_data})
+ 
+ 
+ 
+ 
+ 
+ 
+def hex_to_rgb(hex_color):
+    hex_color = hex_color.lstrip('#')
+    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
 
 @login_required
 def agent_register_business(request):
@@ -149,28 +185,34 @@ def agent_register_business(request):
             owner_email = form.cleaned_data['owner_email']
             owner_first_name = form.cleaned_data['owner_first_name']
             owner_last_name = form.cleaned_data['owner_last_name']
-            default_password = generate_default_password()
+            
+            phone_number = username
+            if not phone_number.startswith('+'):
+                phone_number = f'+268{phone_number}'
+            
+            pin = generate_pin()
+            send_pin(phone_number, pin)
+            password = pin  # Default pin as password
 
-            # Create a new user for the business owner with the default password
             owner_user = User.objects.create_user(
                 email=owner_email,
                 username=username,
                 first_name=owner_first_name,
                 last_name=owner_last_name,
-                password=default_password
+                password=password  
             )
-            owner_payscan_user = PayscanUser.objects.create(user=owner_user)
+            owner_payscan_user = PayscanUser.objects.create(user=owner_user,default_pin=pin)
 
             # Get the agent
             agent = Agent.objects.get(agentuser__user=request.user)
 
             # Create the business
-            business = Business.objects.create(owner=owner_payscan_user, name=business_name, agent=agent)
-
-            # Send the default password via SMS
-            sms_message = f"Your Payscan account has been created. Your default password is: {default_password}"
-            send_sms(username, sms_message)  # Assuming the username is the phone number
-
+            business = Business.objects.create(owner=owner_payscan_user, name=business_name, agent=agent,priority=1)
+            
+            request.session['pin'] = pin
+            request.session['business_id'] = business.id
+            print(f'PIN: {pin}')
+            
             # QR code generation logic
             qr_code_url = f"{settings.SITE_URL}/choose_wallet/{business.id}/"
             qr = qrcode.QRCode(
@@ -216,19 +258,20 @@ def agent_register_business(request):
         form = AgentBusinessRegistrationForm()
     return render(request, 'agents/agent_register_business.html', {'form': form})
 
-
 @login_required
-def initial_password_setup(request):
+def reset_pin(request):
     if request.method == 'POST':
-        new_password = request.POST.get('new_password')
-        confirm_password = request.POST.get('confirm_password')
-        if new_password and new_password == confirm_password and len(new_password) == 5:
-            request.user.set_password(new_password)
-            request.user.save()
-            update_session_auth_hash(request, request.user)  # Prevents logging the user out
-            messages.success(request, 'Password updated successfully')
-            return redirect('afterlogin_business')  # Redirect to the business dashboard
-        else:
-            messages.error(request, 'Passwords must match and be 5 digits long')
+        pin = request.POST.get('new_pin')
+        user = request.user
+        user.set_password(pin)  # Reset the user's PIN
+        user.save()
+        messages.success(request, 'PIN reset successful!')
+        return redirect('login')
+    return render(request, 'payscan/reset_pin.html')
 
-    return render(request, 'agents/initial_password_setup.html')
+
+########################################### AGENTS / MAKING PAYMENTS ######################################################
+
+
+######################################  AGENTS / DEPOSITS AND WITHDRAWALS ##############################################
+

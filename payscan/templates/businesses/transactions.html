@@ -1,0 +1,15 @@
+<tbody id="transactionTableBody" style="background:#4d1616;">
+    {% for transaction in transactions %}
+    <tr>
+        <td>{{ transaction.id }}</td>
+        <td>{{ transaction.payer.user.first_name }}</td>
+        <td>SZL {{ transaction.amount }}</td>
+        <td>{{ transaction.transaction_type }}</td>
+        <td>{{ transaction.timestamp }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="5">No transactions found.</td>
+    </tr>
+    {% endfor %}
+</tbody>

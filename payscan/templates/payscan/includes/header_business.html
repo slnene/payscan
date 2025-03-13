@@ -1,6 +1,6 @@
 {% load static %} 
 
-<header id="header" class="header d-flex align-items-center fixed-top">
+<header id="header" class="header d-flex align-items-center fixed-top animate__fadeInDown">
     <div class="container-fluid container-xl d-flex align-items-center justify-content-between">
         <a href="/afterlogin_business/" class="logo d-flex align-items-center">
             <!-- Uncomment the line below if you also wish to use an image logo -->
@@ -13,9 +13,9 @@
                     <li class="dropdown">
                         <a href="#" class="dropbtn">Dashboard</a>
                         <div class="dropdown-content">
-                            <a href="/afterlogin_agent/">Agent Dashboard</a>
                             <a href="/afterlogin/">Customer Dashboard</a>
                             <a href="/afterlogin_business/">Business Dashboard</a>
+                            <a href="/afterlogin_agent/">Agent Dashboard</a>>
                         </div>
                     </li>
                     <li><a href="/withdraw_business/">Withdraw</a></li>
@@ -31,8 +31,7 @@
 
 <style>
     .dropdown {
-        position: relative;
-        display: inline-block;
+       
     }
 
     .dropdown-content {
@@ -63,3 +62,4 @@
         background-color: #3e8e41;
     }
 </style>
+<div class="animate__animated animate__fadeIn">

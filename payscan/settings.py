@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'agents',
     'businesses',
     'users',
+    #'django_ratelimit',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -60,8 +61,23 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.middleware.gzip.GZipMiddleware',
+    #'payscan.middleware.RestrictIPMiddleware',
+    #'django_ratelimit.middleware.RatelimitMiddleware',
+    
 ]
+# settings.py
+RATELIMIT_VIEW = 'payscan.middleware.CustomRatelimitMiddleware'
 
+## CACHES = {
+   # 'default': {
+    #    'BACKEND': 'django_redis.cache.RedisCache',
+     #   'LOCATION': 'redis://127.0.0.1:6379/1',
+      #  'OPTIONS': {
+       #     'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        #}
+    #}
+#}
 
 
 ROOT_URLCONF = 'payscan.urls'
@@ -174,7 +190,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #SECURE_HSTS_PRELOAD = True
 
 # Axes configuration
-AXES_FAILURE_LIMIT = 5  # Number of allowed attempts
+AXES_FAILURE_LIMIT = 50  # Number of allowed attempts
 AXES_COOLOFF_TIME = 1  # Cool-off period in hours
 AXES_RESET_ON_SUCCESS = True  # Reset attempts on successful login
 
@@ -185,27 +201,43 @@ print("Base Directory:", BASE_DIR)
 print("Static Root:", STATIC_ROOT)
 print("Media Root:", MEDIA_ROOT)
 
-#settings.py MOMO API
-MTN_MOMO_API_KEY = 'a0b02d7e798c4b48809406432e9a5d18'
-MTN_MOMO_ACCESS_TOKEN='eyJ0eXAiOiJKV1QiLCJhbGciOiJSMjU2In0.eyJjbGllbnRJZCI6IjE4ODA0NjVlLTc5ZGYtNDhlNS05MDgxLTdjMDI3OGI0Y2Q4NyIsImV4cGlyZXMiOiIyMDI0LTA5LTE2VDE4OjE0OjM4LjUwNSIsInNlc3Npb25JZCI6ImNhNzJhY2NiLTdkODktNGMxMC04MTY1LTM2ODJlZmRhYmU5NCJ9.HBH5uC2Z0FuuR4A-Pcfqc9_U3iXM9fmeRDvOHJGZCQ9-WJi2hxEH_1tY37t4ge2NZN55tLHitnd_Wt17zPJ8jF2feDhmr7zmMo-hm-El8NMpV1zM9EME8CrTGX5SavJYFEkNpjPhtvPb2J4RlQPas2WOMTZxIfIoUnU0RbB799sIELf41ulWe1-AeGZYlzL2hI_s7Me7r_hzhFf0TEfSCrwLlw6eMfp3qtWOaasAQ7EFR20_zFOlh-e2Z13OoXXRg_JO4XzWtyegaLLgFjGt4qnnTbE0gVB9oSuRRghxo2iCVYwBwW952mUT2oH42LBVOwR1xdITQ_b9KlzwfDKPSg'
-MTN_MOMO_SUBSCRIPTION_KEY='9c990bd1b3914fb783317a44c4971c62'
-MOMO_API_ENVIRONMENT = 'sandbox'  # or 'live'     
 
+# settings.py
+from decouple import config
 
+# MTN MoMo API credentials
+MTN_MOMO_API_KEY = config('MTN_MOMO_API_KEY', default='0365be4731f24275994ddc69866d0342')
+MTN_MOMO_SUBSCRIPTION_KEY = config('MTN_MOMO_SUBSCRIPTION_KEY', default='b9642e7f19d84220b5d0774daf08840b')
+MTN_MOMO_USER_ID = config('MTN_MOMO_USER_ID', default='98da44ce-dff8-4eb1-9fad-1fd68c9d4450')
+MOMO_API_ENVIRONMENT = config('MOMO_API_ENVIRONMENT', default='sandbox')
 
-
-
-
-TWILIO_ACCOUNT_ID=''
-TWILIO_AUTH_TOKEN=''
-TWILIO_DEFAULT_CALLERID=''
-DJANGO_TWILIO_FORGERY_PROTECTION=False
-
-
-
-
-{
-  "python.analysis.extraPaths": [
-    "E:/projects/payscans/payscan_WEB-main/payscan/.venv/Lib/site-packages"
-  ]
+# MoMo API settings
+MOMOAPI = {
+    'collections': {
+        'sandbox': {
+            'subscription_key': MTN_MOMO_SUBSCRIPTION_KEY,
+            'user_id': MTN_MOMO_USER_ID,
+            'api_key': MTN_MOMO_API_KEY,
+            'environment': MOMO_API_ENVIRONMENT,
+            'base_url': 'https://sandbox.momodeveloper.mtn.com/collection'
+        },
+        'production': {
+            'subscription_key': config('PROD_MTN_MOMO_SUBSCRIPTION_KEY', default='your_production_subscription_key'),
+            'user_id': config('PROD_MTN_MOMO_USER_ID', default='your_production_user_id'),
+            'api_key': config('PROD_MTN_MOMO_API_KEY', default='your_production_api_key'),
+            'environment': 'production',
+            'base_url': 'https://momodeveloper.mtn.com/collection'
+        },
+    },
 }
+
+
+import firebase_admin
+from firebase_admin import credentials
+
+cred = credentials.Certificate("payscan/payscaneswatini-firebase-adminsdk-wwqfv-92f0cdae19.json")
+firebase_admin.initialize_app(cred)
+
+
+
+

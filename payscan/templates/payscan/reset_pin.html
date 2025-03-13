@@ -1,0 +1,50 @@
+{% load static %}
+<!doctype html>
+
+<html lang="en">
+
+{% include "payscan/includes/head.html" %}
+<link href="{% static 'css/signin.css' %}" rel="stylesheet">
+
+<style>
+  .header {
+    height: 48px;
+    margin-bottom: 40px;
+  }
+  .form-signin input {
+    margin-bottom: 10px;
+    padding: 10px;
+    width: 100%;
+  }
+  .form-signin button {
+    padding: 10px 20px;
+  }
+  .error-message {
+    color: red;
+    display: none;
+  }
+</style>
+
+<body id="main" data-barba="wrapper" class="text-center m-scene">
+  <main id="main-content" class="m-page form-signin">
+         
+      {% include "payscan/includes/header.html" %}
+
+      <h1>SET PIN</h1>
+      <form method="post" onsubmit="return validatePins()">
+        {% csrf_token %}
+        <label for="new_pin">SET NEW PIN:</label>
+        <input type="password" id="new_pin" name="new_pin" required>
+        <label for="confirm_pin">CONFIRM NEW PIN:</label>
+        <input type="password" id="confirm_pin" name="confirm_pin" required>
+        <span id="error-message" class="error-message">PINs do not match. Please try again.</span>
+        <button type="submit">Verify</button>
+      </form>
+
+      {% include "payscan/includes/footer_bottom.html" %}
+
+  </main>
+  {% include "payscan/includes/foot.html" %}
+
+</body>
+</html>
