@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-mnfxx8wt#p8q03e-&h!y6ud=c(r9&5@^$0$$)ez32o*&!js17l
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['payscan.onrender.com','www.onrender.com']
 
 # Application definition
 
