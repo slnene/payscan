@@ -1,7 +1,6 @@
 django==5.0
 whitenoise 
-
-
+gunicorn 
 qrcode
 requests
 opencv-python 
