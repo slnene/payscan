@@ -16,4 +16,6 @@ django-ratelimit
 django-redis
 unimatrix
 firebase-admin
+psycopg2-binary
+dj-database-url
 
